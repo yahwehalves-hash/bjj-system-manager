@@ -164,3 +164,4 @@ Em caso de falha:
 
 > As operações de **leitura** (GET) consultam o banco diretamente via Dapper — sem passar pelo RabbitMQ.
 # bjj-system-manager
+# bjj-system-manager

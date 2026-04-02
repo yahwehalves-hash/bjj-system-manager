@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-JiuJitsu.Worker-bc2c9804-8168-491c-b5c4-54bd60e4d348</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.3.1" />
+    <PackageReference Include="Aspire.RabbitMQ.Client" Version="9.3.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JiuJitsu.Application\JiuJitsu.Application.csproj" />
+    <ProjectReference Include="..\JiuJitsu.Infrastructure\JiuJitsu.Infrastructure.csproj" />
+    <ProjectReference Include="..\JiuJitsu.Contracts\JiuJitsu.Contracts.csproj" />
+    <ProjectReference Include="..\JiuJitsu.ServiceDefaults\JiuJitsu.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

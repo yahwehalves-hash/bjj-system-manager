@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+
+# Claude Code
+.claude/
+
+# .NET build outputs
+bin/
+obj/
+*.user
+
+# Node
+node_modules/
+dist/
