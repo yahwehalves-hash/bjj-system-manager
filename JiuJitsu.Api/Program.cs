@@ -1,5 +1,7 @@
 using System.Text;
 using JiuJitsu.Application;
+using JiuJitsu.Application.Interfaces;
+using JiuJitsu.Api.Services;
 using JiuJitsu.Infrastructure;
 using JiuJitsu.Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,6 +23,10 @@ builder.AddRabbitMQClient("rabbitmq");
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddEmailConfiguracoes(builder.Configuration);
+
+// Contexto de filial — extrai FilialId do JWT por requisição
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IFilialContexto, FilialContexto>();
 
 builder.Services.AddCors(options =>
 {

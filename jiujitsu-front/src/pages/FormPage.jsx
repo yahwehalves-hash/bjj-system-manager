@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { atletasApi } from '../api/atletasApi';
+import { filiaisApi } from '../api/filiaisApi';
 
 const FAIXAS = [
   { valor: 1, label: 'Branca' },
@@ -20,6 +21,7 @@ const GRAUS = [
 ];
 
 const FORM_INICIAL = {
+  filialId: '',
   nomeCompleto: '',
   cpf: '',
   dataNascimento: '',
@@ -29,15 +31,22 @@ const FORM_INICIAL = {
   email: '',
 };
 
-export function FormPage() {
+export function FormPage({ usuario }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const edicao = Boolean(id);
+  const isAdmin = usuario?.role === 'Admin';
 
   const [form, setForm] = useState(FORM_INICIAL);
+  const [filiais, setFiliais] = useState([]);
   const [carregando, setCarregando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
+
+  // Carrega filiais para o Admin selecionar
+  useEffect(() => {
+    if (isAdmin) filiaisApi.listar(true).then(r => setFiliais(r.data)).catch(() => {})
+  }, [])
 
   // Em edição, carrega os dados atuais do atleta
   useEffect(() => {
@@ -73,6 +82,7 @@ export function FormPage() {
 
     // Monta o payload no formato esperado pela API
     const payload = {
+      filialId:            form.filialId || '00000000-0000-0000-0000-000000000000',
       nomeCompleto:        form.nomeCompleto,
       cpf:                 form.cpf.replace(/\D/g, ''), // remove formatação
       dataNascimento:      form.dataNascimento,
@@ -89,7 +99,7 @@ export function FormPage() {
         await atletasApi.criar(payload);
       }
       // Retorna para a lista — o Worker processará em background
-      navigate('/', {
+      navigate('/atletas', {
         state: {
           aviso: edicao
             ? 'Atualização enviada para processamento.'
@@ -115,6 +125,16 @@ export function FormPage() {
       {erro && <div className="alerta-erro">{erro}</div>}
 
       <form className="formulario" onSubmit={handleSubmit}>
+        {isAdmin && (
+          <div className="campo">
+            <label>Filial *</label>
+            <select name="filialId" value={form.filialId} onChange={handleChange} required>
+              <option value="">Selecione a filial</option>
+              {filiais.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+            </select>
+          </div>
+        )}
+
         <div className="campo">
           <label>Nome Completo *</label>
           <input
@@ -198,7 +218,7 @@ export function FormPage() {
           <button
             type="button"
             className="btn-secundario"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/atletas')}
             disabled={salvando}
           >
             Cancelar

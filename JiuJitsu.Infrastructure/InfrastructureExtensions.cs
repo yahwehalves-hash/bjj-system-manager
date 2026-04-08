@@ -17,9 +17,20 @@ public static class InfrastructureExtensions
         // Registra handler de tipo para DateOnly no Dapper
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
-        // Repositórios
+        // Repositórios — escrita (EF Core)
         services.AddScoped<IAtletaRepository, AtletaRepository>();
+        services.AddScoped<IFilialRepository, FilialRepository>();
+        services.AddScoped<IConfiguracaoRepository, ConfiguracaoRepository>();
+        services.AddScoped<IMensalidadeRepository, MensalidadeRepository>();
+        services.AddScoped<IDespesaRepository, DespesaRepository>();
+
+        // Repositórios — leitura (Dapper)
         services.AddScoped<IAtletaReadRepository, AtletaReadRepository>();
+        services.AddScoped<IFilialReadRepository, FilialReadRepository>();
+        services.AddScoped<IConfiguracaoReadRepository, ConfiguracaoReadRepository>();
+        services.AddScoped<IMensalidadeReadRepository, MensalidadeReadRepository>();
+        services.AddScoped<IDespesaReadRepository, DespesaReadRepository>();
+        services.AddScoped<IDashboardReadRepository, DashboardReadRepository>();
 
         // Mensageria
         services.AddScoped<IMessagePublisher, RabbitMqPublisher>();

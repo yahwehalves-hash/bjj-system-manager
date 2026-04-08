@@ -31,6 +31,7 @@ public class CriarAtletaHandler
         // O Worker cria o atleta com um novo ID gerado no construtor.
         // O ID retornado pela API é apenas um correlation ID para rastreamento.
         var atleta = new Atleta(
+            filialId:            payload.FilialId,
             nomeCompleto:        payload.NomeCompleto,
             cpf:                 new Cpf(payload.Cpf),
             dataNascimento:      payload.DataNascimento,

@@ -23,7 +23,7 @@ public class ListarAtletasQueryHandlerTests
         var query = new ListarAtletasQuery(Nome: null, Faixa: null, Pagina: 1, TamanhoPagina: 10);
 
         var resultadoEsperado = new ListaAtletasDto(
-            Itens: [new AtletaResumoDto(Guid.NewGuid(), "Carlos Silva", "12345678901", "Azul", 2, true)],
+            Itens: [new AtletaResumoDto(Guid.NewGuid(), Guid.NewGuid(), "Carlos Silva", "12345678901", "Azul", 2, true)],
             TotalItens: 1,
             Pagina: 1,
             TamanhoPagina: 10);

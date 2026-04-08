@@ -5,19 +5,23 @@ namespace JiuJitsu.Domain.Entities;
 
 public class Atleta
 {
-    public Guid Id { get; private set; }
-    public string NomeCompleto { get; private set; }
-    public Cpf Cpf { get; private set; }
-    public DateOnly DataNascimento { get; private set; }
-    public Faixa Faixa { get; private set; }
-    public Grau Grau { get; private set; }
-    public DateOnly DataUltimaGraduacao { get; private set; }
-    public Email Email { get; private set; }
+    public Guid      Id                  { get; private set; }
+    public Guid      FilialId            { get; private set; }
+    public string    NomeCompleto        { get; private set; }
+    public Cpf       Cpf                 { get; private set; }
+    public DateOnly  DataNascimento      { get; private set; }
+    public Faixa     Faixa               { get; private set; }
+    public Grau      Grau                { get; private set; }
+    public DateOnly  DataUltimaGraduacao { get; private set; }
+    public Email     Email               { get; private set; }
 
     // Soft delete — atletas excluídos são marcados como inativos
-    public bool Ativo { get; private set; }
-    public DateTime CriadoEm { get; private set; }
+    public bool      Ativo        { get; private set; }
+    public DateTime  CriadoEm    { get; private set; }
     public DateTime? AtualizadoEm { get; private set; }
+
+    // Navigation property — preenchida pelo EF Core
+    public Filial Filial { get; private set; } = null!;
 
     // Construtor privado reservado ao EF Core — null! suprime aviso de nullable
     // pois o EF Core preenche as propriedades via reflection após instanciar
@@ -29,15 +33,17 @@ public class Atleta
     }
 
     public Atleta(
-        string nomeCompleto,
-        Cpf cpf,
+        Guid     filialId,
+        string   nomeCompleto,
+        Cpf      cpf,
         DateOnly dataNascimento,
-        Faixa faixa,
-        Grau grau,
+        Faixa    faixa,
+        Grau     grau,
         DateOnly dataUltimaGraduacao,
-        Email email)
+        Email    email)
     {
-        Id                  = Guid.NewGuid();
+        Id                  = Guid.CreateVersion7();
+        FilialId            = filialId;
         NomeCompleto        = nomeCompleto;
         Cpf                 = cpf;
         DataNascimento      = dataNascimento;
@@ -52,12 +58,12 @@ public class Atleta
     }
 
     public void Atualizar(
-        string nomeCompleto,
+        string   nomeCompleto,
         DateOnly dataNascimento,
-        Faixa faixa,
-        Grau grau,
+        Faixa    faixa,
+        Grau     grau,
         DateOnly dataUltimaGraduacao,
-        Email email)
+        Email    email)
     {
         NomeCompleto        = nomeCompleto;
         DataNascimento      = dataNascimento;

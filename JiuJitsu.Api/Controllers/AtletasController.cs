@@ -2,6 +2,7 @@ using JiuJitsu.Application.Commands.AtualizarAtleta;
 using JiuJitsu.Application.Commands.CriarAtleta;
 using JiuJitsu.Application.Commands.ExcluirAtleta;
 using JiuJitsu.Application.DTOs;
+using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Application.Queries.ListarAtletas;
 using JiuJitsu.Application.Queries.ObterAtletaPorId;
 using JiuJitsu.Domain.Enums;
@@ -14,9 +15,14 @@ namespace JiuJitsu.Api.Controllers;
 [Route("api/[controller]")]
 public class AtletasController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IMediator       _mediator;
+    private readonly IFilialContexto _filialContexto;
 
-    public AtletasController(IMediator mediator) => _mediator = mediator;
+    public AtletasController(IMediator mediator, IFilialContexto filialContexto)
+    {
+        _mediator       = mediator;
+        _filialContexto = filialContexto;
+    }
 
     /// <summary>Lista atletas com filtros opcionais e paginação</summary>
     [HttpGet]
@@ -53,7 +59,10 @@ public class AtletasController : ControllerBase
         [FromBody] CriarAtletaRequest request,
         CancellationToken cancellationToken)
     {
+        var filialId = _filialContexto.FilialId ?? request.FilialId;
+
         var command = new CriarAtletaCommand(
+            filialId,
             request.NomeCompleto,
             request.Cpf,
             request.DataNascimento,
@@ -116,6 +125,7 @@ public class AtletasController : ControllerBase
 
 // Request DTOs — usados apenas na camada de apresentação
 public record CriarAtletaRequest(
+    Guid     FilialId,
     string   NomeCompleto,
     string   Cpf,
     DateOnly DataNascimento,

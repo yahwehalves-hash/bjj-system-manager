@@ -55,6 +55,10 @@ namespace JiuJitsu.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("faixa");
 
+                    b.Property<Guid>("FilialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("filial_id");
+
                     b.Property<int>("Grau")
                         .HasColumnType("integer")
                         .HasColumnName("grau");
@@ -67,47 +71,347 @@ namespace JiuJitsu.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FilialId");
+
                     b.ToTable("atletas", (string)null);
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.ConfiguracaoFilial", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("AtualizadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("atualizado_em");
+
+                    b.Property<Guid?>("AtualizadoPorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("atualizado_por_id");
+
+                    b.Property<decimal?>("DescontoAntecipacaoPercentual")
+                        .HasColumnType("decimal(7,6)")
+                        .HasColumnName("desconto_antecipacao_percentual");
+
+                    b.Property<int?>("DiaVencimento")
+                        .HasColumnType("integer")
+                        .HasColumnName("dia_vencimento");
+
+                    b.Property<Guid>("FilialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("filial_id");
+
+                    b.Property<decimal?>("JurosDiarioPercentual")
+                        .HasColumnType("decimal(7,6)")
+                        .HasColumnName("juros_diario_percentual");
+
+                    b.Property<decimal?>("MultaAtrasoPercentual")
+                        .HasColumnType("decimal(7,6)")
+                        .HasColumnName("multa_atraso_percentual");
+
+                    b.Property<int?>("ToleranciaInadimplenciaDias")
+                        .HasColumnType("integer")
+                        .HasColumnName("tolerancia_inadimplencia_dias");
+
+                    b.Property<decimal?>("ValorMensalidadePadrao")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("valor_mensalidade_padrao");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FilialId")
+                        .IsUnique();
+
+                    b.ToTable("configuracao_filial", (string)null);
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.ConfiguracaoGlobal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("AtualizadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("atualizado_em");
+
+                    b.Property<Guid?>("AtualizadoPorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("atualizado_por_id");
+
+                    b.Property<decimal>("DescontoAntecipacaoPercentual")
+                        .HasColumnType("decimal(7,6)")
+                        .HasColumnName("desconto_antecipacao_percentual");
+
+                    b.Property<int>("DiaVencimento")
+                        .HasColumnType("integer")
+                        .HasColumnName("dia_vencimento");
+
+                    b.Property<decimal>("JurosDiarioPercentual")
+                        .HasColumnType("decimal(7,6)")
+                        .HasColumnName("juros_diario_percentual");
+
+                    b.Property<decimal>("MultaAtrasoPercentual")
+                        .HasColumnType("decimal(7,6)")
+                        .HasColumnName("multa_atraso_percentual");
+
+                    b.Property<int>("ToleranciaInadimplenciaDias")
+                        .HasColumnType("integer")
+                        .HasColumnName("tolerancia_inadimplencia_dias");
+
+                    b.Property<decimal>("ValorMensalidadePadrao")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("valor_mensalidade_padrao");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("configuracao_global", (string)null);
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.Despesa", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("AtualizadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("atualizado_em");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("categoria");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<DateOnly>("DataCompetencia")
+                        .HasColumnType("date")
+                        .HasColumnName("data_competencia");
+
+                    b.Property<DateOnly?>("DataPagamento")
+                        .HasColumnType("date")
+                        .HasColumnName("data_pagamento");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("descricao");
+
+                    b.Property<Guid>("FilialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("filial_id");
+
+                    b.Property<string>("FormaPagamento")
+                        .HasColumnType("text")
+                        .HasColumnName("forma_pagamento");
+
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("observacao");
+
+                    b.Property<Guid?>("RegistradoPorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("registrado_por_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Subcategoria")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("subcategoria");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("valor");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FilialId", "DataCompetencia");
+
+                    b.HasIndex("FilialId", "Status");
+
+                    b.ToTable("despesas", (string)null);
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.Filial", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Ativo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("ativo");
+
+                    b.Property<string>("Cnpj")
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
+                        .HasColumnName("cnpj");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<string>("Endereco")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("endereco");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nome");
+
+                    b.Property<string>("Telefone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("telefone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Cnpj")
+                        .IsUnique()
+                        .HasFilter("cnpj IS NOT NULL");
+
+                    b.ToTable("filiais", (string)null);
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.Mensalidade", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AtletaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("atleta_id");
+
+                    b.Property<DateTime?>("AtualizadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("atualizado_em");
+
+                    b.Property<DateOnly>("Competencia")
+                        .HasColumnType("date")
+                        .HasColumnName("competencia");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<DateOnly?>("DataPagamento")
+                        .HasColumnType("date")
+                        .HasColumnName("data_pagamento");
+
+                    b.Property<DateOnly>("DataVencimento")
+                        .HasColumnType("date")
+                        .HasColumnName("data_vencimento");
+
+                    b.Property<Guid>("FilialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("filial_id");
+
+                    b.Property<string>("FormaPagamento")
+                        .HasColumnType("text")
+                        .HasColumnName("forma_pagamento");
+
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("observacao");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("valor");
+
+                    b.Property<decimal?>("ValorPago")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("valor_pago");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AtletaId", "Competencia")
+                        .IsUnique();
+
+                    b.HasIndex("DataVencimento", "Status");
+
+                    b.HasIndex("FilialId", "Status");
+
+                    b.ToTable("mensalidades", (string)null);
                 });
 
             modelBuilder.Entity("JiuJitsu.Domain.Entities.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CriadoEm")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("email");
+
+                    b.Property<Guid?>("FilialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("filial_id");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nome");
 
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("role");
 
                     b.Property<string>("SenhaHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("senha_hash");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Usuarios");
+                    b.HasIndex("FilialId");
+
+                    b.ToTable("usuarios", (string)null);
                 });
 
             modelBuilder.Entity("JiuJitsu.Domain.Entities.Atleta", b =>
                 {
+                    b.HasOne("JiuJitsu.Domain.Entities.Filial", "Filial")
+                        .WithMany()
+                        .HasForeignKey("FilialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("JiuJitsu.Domain.ValueObjects.Cpf", "Cpf", b1 =>
                         {
                             b1.Property<Guid>("AtletaId")
@@ -157,6 +461,59 @@ namespace JiuJitsu.Infrastructure.Migrations
 
                     b.Navigation("Email")
                         .IsRequired();
+
+                    b.Navigation("Filial");
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.ConfiguracaoFilial", b =>
+                {
+                    b.HasOne("JiuJitsu.Domain.Entities.Filial", "Filial")
+                        .WithOne()
+                        .HasForeignKey("JiuJitsu.Domain.Entities.ConfiguracaoFilial", "FilialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Filial");
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.Despesa", b =>
+                {
+                    b.HasOne("JiuJitsu.Domain.Entities.Filial", "Filial")
+                        .WithMany()
+                        .HasForeignKey("FilialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Filial");
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.Mensalidade", b =>
+                {
+                    b.HasOne("JiuJitsu.Domain.Entities.Atleta", "Atleta")
+                        .WithMany()
+                        .HasForeignKey("AtletaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JiuJitsu.Domain.Entities.Filial", "Filial")
+                        .WithMany()
+                        .HasForeignKey("FilialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Atleta");
+
+                    b.Navigation("Filial");
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.Usuario", b =>
+                {
+                    b.HasOne("JiuJitsu.Domain.Entities.Filial", "Filial")
+                        .WithMany()
+                        .HasForeignKey("FilialId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Filial");
                 });
 #pragma warning restore 612, 618
         }

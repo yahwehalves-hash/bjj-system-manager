@@ -62,13 +62,17 @@ public class AuthController : ControllerBase
         var chave    = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Chave"]!));
         var credencial = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub,   usuario.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
             new Claim(ClaimTypes.Name,               usuario.Nome),
             new Claim(ClaimTypes.Role,               usuario.Role),
         };
+
+        // Inclui o FilialId no token para isolamento de dados por filial
+        if (usuario.FilialId.HasValue)
+            claims.Add(new Claim("filialId", usuario.FilialId.Value.ToString()));
 
         var token = new JwtSecurityToken(
             issuer:             _config["Jwt:Emissor"],

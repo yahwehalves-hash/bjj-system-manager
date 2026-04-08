@@ -62,6 +62,7 @@ public class AtletaReadRepository : IAtletaReadRepository
         var sqlItens = $"""
             SELECT
                 id              AS Id,
+                filial_id       AS FilialId,
                 nome_completo   AS NomeCompleto,
                 cpf             AS Cpf,
                 faixa           AS Faixa,

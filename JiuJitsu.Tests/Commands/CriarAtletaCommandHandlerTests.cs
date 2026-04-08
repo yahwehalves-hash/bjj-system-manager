@@ -22,6 +22,7 @@ public class CriarAtletaCommandHandlerTests
     {
         // Arrange
         var command = new CriarAtletaCommand(
+            FilialId:            Guid.NewGuid(),
             NomeCompleto:        "Carlos Silva",
             Cpf:                 "12345678901",
             DataNascimento:      new DateOnly(1990, 5, 15),
@@ -50,6 +51,7 @@ public class CriarAtletaCommandHandlerTests
     {
         // Arrange
         var command = new CriarAtletaCommand(
+            Guid.NewGuid(),
             "Ana Lima", "98765432100",
             new DateOnly(1995, 3, 20),
             Faixa.Roxa, Grau.Primeiro,

@@ -15,6 +15,15 @@ public class AtletaConfiguration : IEntityTypeConfiguration<Atleta>
             .ValueGeneratedNever()
             .HasColumnName("id");
 
+        builder.Property(a => a.FilialId)
+            .IsRequired()
+            .HasColumnName("filial_id");
+
+        builder.HasOne(a => a.Filial)
+            .WithMany()
+            .HasForeignKey(a => a.FilialId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(a => a.NomeCompleto)
             .IsRequired()
             .HasMaxLength(200)

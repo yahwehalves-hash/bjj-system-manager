@@ -17,7 +17,7 @@ public class CriarAtletaCommandHandler : IRequestHandler<CriarAtletaCommand, Gui
 
         // Gera o ID aqui para retornar imediatamente ao cliente
         // O Worker usará este mesmo ID ao salvar no banco
-        var atletaId = Guid.NewGuid();
+        var atletaId = Guid.CreateVersion7();
 
         var mensagem = new AtletaMensagem
         {
@@ -26,6 +26,7 @@ public class CriarAtletaCommandHandler : IRequestHandler<CriarAtletaCommand, Gui
             OcorridoEm  = DateTime.UtcNow,
             Payload     = new AtletaPayload
             {
+                FilialId            = request.FilialId,
                 NomeCompleto        = request.NomeCompleto,
                 Cpf                 = request.Cpf,
                 DataNascimento      = request.DataNascimento,

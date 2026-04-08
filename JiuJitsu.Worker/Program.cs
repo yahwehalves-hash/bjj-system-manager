@@ -1,7 +1,9 @@
+using JiuJitsu.Application;
 using JiuJitsu.Infrastructure;
 using JiuJitsu.Infrastructure.Persistence.Context;
 using JiuJitsu.Worker.Consumers;
 using JiuJitsu.Worker.Handlers;
+using JiuJitsu.Worker.Jobs;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -18,17 +20,25 @@ builder.AddRabbitMQClient("rabbitmq", configureConnectionFactory: factory =>
     factory.DispatchConsumersAsync = true;
 });
 
+// Camada de Application (MediatR — necessário para os handlers financeiros)
+builder.Services.AddApplication();
+
 // Camada de Infrastructure (repositórios, email)
 builder.Services.AddInfrastructure();
 builder.Services.AddEmailConfiguracoes(builder.Configuration);
 
-// Handlers do Worker (Scoped pois dependem do DbContext)
+// Handlers do Worker — atletas (Scoped pois dependem do DbContext)
 builder.Services.AddScoped<CriarAtletaHandler>();
 builder.Services.AddScoped<AtualizarAtletaHandler>();
 builder.Services.AddScoped<ExcluirAtletaHandler>();
 
-// Consumer como HostedService (BackgroundService)
+// Handlers do Worker — financeiro
+builder.Services.AddScoped<GerarMensalidadesHandler>();
+builder.Services.AddScoped<AtualizarStatusMensalidadesHandler>();
+
+// Consumers e Jobs como HostedService (BackgroundService)
 builder.Services.AddHostedService<AtletaConsumer>();
+builder.Services.AddHostedService<FinanceiroJob>();
 
 var host = builder.Build();
 
