@@ -15,6 +15,12 @@ const COR_FAIXA = {
   Preta:   '#212121',
 };
 
+function formatarData(iso) {
+  if (!iso) return '—';
+  const [ano, mes, dia] = iso.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
 export function ListaPage() {
   const navigate = useNavigate();
 
@@ -24,7 +30,8 @@ export function ListaPage() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
-  const [confirmarExclusao, setConfirmarExclusao] = useState(null); // id do atleta a excluir
+  const [confirmarExclusao, setConfirmarExclusao] = useState(null);
+  const [detalhe, setDetalhe] = useState(null); // atleta completo para exibir no modal
 
   useEffect(() => {
     buscar();
@@ -52,12 +59,20 @@ export function ListaPage() {
     setPagina(1);
   }
 
+  async function verDetalhe(id) {
+    try {
+      const atleta = await atletasApi.obterPorId(id);
+      setDetalhe(atleta);
+    } catch {
+      setErro('Erro ao carregar detalhes do atleta.');
+    }
+  }
+
   async function handleExcluir(id) {
     try {
       await atletasApi.excluir(id);
       setAviso('Exclusão enviada para processamento. A lista será atualizada em instantes.');
       setConfirmarExclusao(null);
-      // Aguarda o Worker processar e recarrega
       setTimeout(() => buscar(), 1500);
     } catch {
       setErro('Erro ao excluir atleta.');
@@ -119,6 +134,12 @@ export function ListaPage() {
                   <td className="acoes">
                     <button
                       className="btn-secundario btn-sm"
+                      onClick={() => verDetalhe(atleta.id)}
+                    >
+                      Detalhes
+                    </button>
+                    <button
+                      className="btn-secundario btn-sm"
                       onClick={() => navigate(`/atletas/${atleta.id}/editar`)}
                     >
                       Editar
@@ -135,7 +156,6 @@ export function ListaPage() {
             </tbody>
           </table>
 
-          {/* Paginação */}
           {totalPaginas > 1 && (
             <div className="paginacao">
               <button
@@ -158,7 +178,85 @@ export function ListaPage() {
         </>
       )}
 
-      {/* Dialog de confirmação de exclusão */}
+      {/* Modal de detalhes do atleta */}
+      {detalhe && (
+        <div className="overlay">
+          <div className="dialog" style={{ maxWidth: 520 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Detalhes do Atleta</h2>
+              <button
+                className="btn-secundario btn-sm"
+                onClick={() => setDetalhe(null)}
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 8,
+                  height: 48,
+                  borderRadius: 4,
+                  background: COR_FAIXA[detalhe.faixa] ?? '#ccc',
+                  border: detalhe.faixa === 'Branca' ? '1px solid #ccc' : 'none',
+                  flexShrink: 0,
+                }}
+              />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '1rem' }}>{detalhe.nomeCompleto}</div>
+                <div style={{ fontSize: '0.85rem', color: '#718096' }}>
+                  {detalhe.faixa}{detalhe.grau > 0 ? ` — ${GRAUS[detalhe.grau]} grau` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div className="detalhe-grid">
+              <div className="detalhe-item">
+                <span>CPF</span>
+                <span>{detalhe.cpf}</span>
+              </div>
+              <div className="detalhe-item">
+                <span>Email</span>
+                <span>{detalhe.email || '—'}</span>
+              </div>
+              <div className="detalhe-item">
+                <span>Data de Nascimento</span>
+                <span>{formatarData(detalhe.dataNascimento)}</span>
+              </div>
+              <div className="detalhe-item">
+                <span>Última Graduação</span>
+                <span>{formatarData(detalhe.dataUltimaGraduacao)}</span>
+              </div>
+              <div className="detalhe-item">
+                <span>Filial</span>
+                <span>{detalhe.nomeFilial || detalhe.filialId || '—'}</span>
+              </div>
+              <div className="detalhe-item">
+                <span>Status</span>
+                <span>{detalhe.ativo === false ? 'Inativo' : 'Ativo'}</span>
+              </div>
+              {detalhe.criadoEm && (
+                <div className="detalhe-item">
+                  <span>Cadastrado em</span>
+                  <span>{formatarData(detalhe.criadoEm?.slice(0, 10))}</span>
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                className="btn-secundario"
+                onClick={() => { setDetalhe(null); navigate(`/atletas/${detalhe.id}/editar`) }}
+              >
+                Editar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmarExclusao && (
         <ConfirmDialog
           mensagem="Deseja realmente excluir este atleta? A ação não pode ser desfeita."

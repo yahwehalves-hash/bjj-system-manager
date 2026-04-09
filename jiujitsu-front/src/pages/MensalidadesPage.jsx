@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { mensalidadesApi } from '../api/mensalidadesApi'
+import { DatePicker, MonthPicker } from '../components/DatePicker'
 
 const STATUS_CORES = {
   Pendente:     'badge-warning',
@@ -11,8 +12,11 @@ const STATUS_CORES = {
 }
 
 const FORMAS_PAGAMENTO = ['Dinheiro', 'Pix', 'Cartao', 'Boleto']
+const FORMAS_ENUM = { Dinheiro: 1, Pix: 2, Cartao: 3, Boleto: 4 }
 
-export default function MensalidadesPage() {
+export default function MensalidadesPage({ usuario }) {
+  const isAdmin = usuario?.role === 'Admin'
+
   const [mensalidades, setMensalidades] = useState([])
   const [total, setTotal]               = useState(0)
   const [pagina, setPagina]             = useState(1)
@@ -20,6 +24,9 @@ export default function MensalidadesPage() {
   const [alerta, setAlerta]             = useState({ tipo: '', msg: '' })
   const [modal, setModal]               = useState(null) // { tipo: 'pagamento'|'negociacao', mensalidade }
   const [formModal, setFormModal]       = useState({})
+  const [modalGerar, setModalGerar]     = useState(false)
+  const [competenciaGerar, setCompetenciaGerar] = useState('')
+  const [gerando, setGerando]           = useState(false)
   const tamanhoPagina = 15
 
   useEffect(() => { carregar() }, [pagina, filtros])
@@ -66,10 +73,10 @@ export default function MensalidadesPage() {
   async function confirmarPagamento() {
     try {
       await mensalidadesApi.registrarPagamento(modal.mensalidade.id, {
-        valorPago:     Number(formModal.valorPago),
-        dataPagamento: formModal.dataPagamento,
-        formaPagamento: formModal.formaPagamento,
-        observacao:    formModal.observacao || null,
+        valorPago:      Number(formModal.valorPago),
+        dataPagamento:  formModal.dataPagamento,
+        formaPagamento: FORMAS_ENUM[formModal.formaPagamento],
+        observacao:     formModal.observacao || null,
       })
       setModal(null)
       mostrarAlerta('success', 'Pagamento registrado com sucesso.')
@@ -94,12 +101,35 @@ export default function MensalidadesPage() {
     }
   }
 
+  async function gerarMensalidades() {
+    if (!competenciaGerar) { mostrarAlerta('error', 'Selecione a competência.'); return }
+    setGerando(true)
+    try {
+      const competencia = competenciaGerar + '-01'
+      const res = await mensalidadesApi.gerar(competencia)
+      setModalGerar(false)
+      setCompetenciaGerar('')
+      const geradas = res.data?.mensalidadesGeradas ?? 0
+      mostrarAlerta('success', `${geradas} mensalidade(s) gerada(s) com sucesso.`)
+      await carregar()
+    } catch (e) {
+      mostrarAlerta('error', e.response?.data?.erro || 'Erro ao gerar mensalidades.')
+    } finally {
+      setGerando(false)
+    }
+  }
+
   const totalPaginas = Math.ceil(total / tamanhoPagina)
 
   return (
     <div className="page-container">
       <div className="page-header">
         <h2>Mensalidades</h2>
+        {isAdmin && (
+          <button className="btn btn-primary" onClick={() => setModalGerar(true)}>
+            Gerar Mensalidades
+          </button>
+        )}
       </div>
 
       {alerta.msg && <div className={`alert alert-${alerta.tipo}`}>{alerta.msg}</div>}
@@ -111,8 +141,8 @@ export default function MensalidadesPage() {
           {['Pendente','Paga','Vencida','Inadimplente','Negociada','Cancelada'].map(s =>
             <option key={s} value={s}>{s}</option>)}
         </select>
-        <input type="month" className="input" value={filtros.competencia}
-          onChange={e => { setFiltros({ ...filtros, competencia: e.target.value }); setPagina(1) }} />
+        <MonthPicker value={filtros.competencia}
+          onChange={v => { setFiltros({ ...filtros, competencia: v }); setPagina(1) }} />
         <button className="btn btn-secondary" onClick={() => { setFiltros({ status: '', competencia: '' }); setPagina(1) }}>
           Limpar
         </button>
@@ -161,8 +191,8 @@ export default function MensalidadesPage() {
             <input type="number" className="input" value={formModal.valorPago}
               onChange={e => setFormModal({ ...formModal, valorPago: e.target.value })} />
             <label>Data do Pagamento</label>
-            <input type="date" className="input" value={formModal.dataPagamento}
-              onChange={e => setFormModal({ ...formModal, dataPagamento: e.target.value })} />
+            <DatePicker value={formModal.dataPagamento}
+              onChange={v => setFormModal({ ...formModal, dataPagamento: v })} minYear={2020} />
             <label>Forma de Pagamento</label>
             <select className="input" value={formModal.formaPagamento}
               onChange={e => setFormModal({ ...formModal, formaPagamento: e.target.value })}>
@@ -179,6 +209,28 @@ export default function MensalidadesPage() {
         </div>
       )}
 
+      {modalGerar && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Gerar Mensalidades</h3>
+            <p style={{ fontSize: '0.9rem', color: '#4a5568', marginBottom: 4 }}>
+              Gera mensalidades para todos os atletas ativos da competência selecionada.
+              Atletas que já possuem mensalidade no mês serão ignorados.
+            </p>
+            <label>Competência *</label>
+            <MonthPicker value={competenciaGerar} onChange={setCompetenciaGerar} required />
+            <div className="form-actions">
+              <button className="btn btn-primary" onClick={gerarMensalidades} disabled={gerando}>
+                {gerando ? 'Gerando...' : 'Gerar'}
+              </button>
+              <button className="btn btn-secondary" onClick={() => { setModalGerar(false); setCompetenciaGerar('') }} disabled={gerando}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {modal?.tipo === 'negociacao' && (
         <div className="modal-overlay">
           <div className="modal">
@@ -187,8 +239,8 @@ export default function MensalidadesPage() {
             <input type="number" className="input" value={formModal.novoValor}
               onChange={e => setFormModal({ ...formModal, novoValor: e.target.value })} />
             <label>Nova Data de Vencimento</label>
-            <input type="date" className="input" value={formModal.novaDataVencimento}
-              onChange={e => setFormModal({ ...formModal, novaDataVencimento: e.target.value })} />
+            <DatePicker value={formModal.novaDataVencimento}
+              onChange={v => setFormModal({ ...formModal, novaDataVencimento: v })} minYear={2020} maxYear={2030} />
             <label>Observação</label>
             <input className="input" value={formModal.observacao}
               onChange={e => setFormModal({ ...formModal, observacao: e.target.value })} />

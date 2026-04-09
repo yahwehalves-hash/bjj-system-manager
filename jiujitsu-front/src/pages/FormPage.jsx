@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { atletasApi } from '../api/atletasApi';
 import { filiaisApi } from '../api/filiaisApi';
+import { DatePicker } from '../components/DatePicker';
 
 const FAIXAS = [
   { valor: 1, label: 'Branca' },
@@ -57,12 +58,13 @@ export function FormPage({ usuario }) {
       .obterPorId(id)
       .then((atleta) => {
         setForm({
+          filialId:            atleta.filialId || '',
           nomeCompleto:        atleta.nomeCompleto,
           cpf:                 atleta.cpf,
-          dataNascimento:      atleta.dataNascimento,
+          dataNascimento:      atleta.dataNascimento?.slice(0, 10) ?? '',
           faixa:               FAIXAS.find((f) => f.label === atleta.faixa)?.valor ?? 1,
           grau:                atleta.grau,
-          dataUltimaGraduacao: atleta.dataUltimaGraduacao,
+          dataUltimaGraduacao: atleta.dataUltimaGraduacao?.slice(0, 10) ?? '',
           email:               atleta.email,
         });
       })
@@ -82,7 +84,7 @@ export function FormPage({ usuario }) {
 
     // Monta o payload no formato esperado pela API
     const payload = {
-      filialId:            form.filialId || '00000000-0000-0000-0000-000000000000',
+      ...(form.filialId ? { filialId: form.filialId } : {}),
       nomeCompleto:        form.nomeCompleto,
       cpf:                 form.cpf.replace(/\D/g, ''), // remove formatação
       dataNascimento:      form.dataNascimento,
@@ -162,12 +164,11 @@ export function FormPage({ usuario }) {
 
         <div className="campo">
           <label>Data de Nascimento *</label>
-          <input
-            type="date"
-            name="dataNascimento"
+          <DatePicker
             value={form.dataNascimento}
-            onChange={handleChange}
+            onChange={v => setForm(prev => ({ ...prev, dataNascimento: v }))}
             required
+            minYear={1920}
           />
         </div>
 
@@ -193,12 +194,11 @@ export function FormPage({ usuario }) {
 
         <div className="campo">
           <label>Data da Última Graduação *</label>
-          <input
-            type="date"
-            name="dataUltimaGraduacao"
+          <DatePicker
             value={form.dataUltimaGraduacao}
-            onChange={handleChange}
+            onChange={v => setForm(prev => ({ ...prev, dataUltimaGraduacao: v }))}
             required
+            minYear={1980}
           />
         </div>
 

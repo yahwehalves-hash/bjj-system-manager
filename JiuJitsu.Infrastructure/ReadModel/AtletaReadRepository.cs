@@ -22,6 +22,7 @@ public class AtletaReadRepository : IAtletaReadRepository
         const string sql = """
             SELECT
                 id              AS Id,
+                filial_id       AS FilialId,
                 nome_completo   AS NomeCompleto,
                 cpf             AS Cpf,
                 data_nascimento AS DataNascimento,

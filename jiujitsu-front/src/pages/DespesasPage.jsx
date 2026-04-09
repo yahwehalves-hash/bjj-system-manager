@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
 import { despesasApi } from '../api/despesasApi'
 import { filiaisApi } from '../api/filiaisApi'
+import { DatePicker, MonthPicker } from '../components/DatePicker'
 
 const CATEGORIAS = ['Pessoal', 'Infraestrutura', 'Material', 'Administrativo']
 const FORMAS = ['Dinheiro', 'Pix', 'Cartao', 'Boleto']
+
+// Mapeamento para os valores numéricos dos enums no backend
+const CATEGORIAS_ENUM = { Pessoal: 1, Infraestrutura: 2, Material: 3, Administrativo: 4 }
+const FORMAS_ENUM     = { Dinheiro: 1, Pix: 2, Cartao: 3, Boleto: 4 }
 
 const STATUS_CORES = { APagar: 'badge-warning', Paga: 'badge-success', Cancelada: 'badge-inactive' }
 
@@ -15,6 +20,8 @@ export default function DespesasPage({ usuario }) {
   const [filtros, setFiltros]     = useState({ categoria: '', status: '' })
   const [alerta, setAlerta]       = useState({ tipo: '', msg: '' })
   const [modal, setModal]         = useState(null)
+  const [modalPagar, setModalPagar] = useState(null) // { despesaId }
+  const [formPagar, setFormPagar] = useState({ dataPagamento: '', formaPagamento: 'Pix' })
   const [form, setForm]           = useState({
     filialId: '', descricao: '', categoria: 'Pessoal', subcategoria: '',
     valor: '', dataCompetencia: '', dataPagamento: '', formaPagamento: '', observacao: '',
@@ -54,15 +61,15 @@ export default function DespesasPage({ usuario }) {
     }
     try {
       await despesasApi.lancar({
-        filialId:       form.filialId || undefined,
-        descricao:      form.descricao,
-        categoria:      form.categoria,
-        subcategoria:   form.subcategoria,
-        valor:          Number(form.valor),
+        filialId:        form.filialId || undefined,
+        descricao:       form.descricao,
+        categoria:       CATEGORIAS_ENUM[form.categoria],
+        subcategoria:    form.subcategoria,
+        valor:           Number(form.valor),
         dataCompetencia: form.dataCompetencia,
-        dataPagamento:  form.dataPagamento || null,
-        formaPagamento: form.formaPagamento || null,
-        observacao:     form.observacao    || null,
+        dataPagamento:   form.dataPagamento || null,
+        formaPagamento:  form.formaPagamento ? FORMAS_ENUM[form.formaPagamento] : null,
+        observacao:      form.observacao    || null,
       })
       setModal(null)
       mostrarAlerta('success', 'Despesa lançada com sucesso.')
@@ -72,10 +79,20 @@ export default function DespesasPage({ usuario }) {
     }
   }
 
-  async function marcarPaga(id) {
-    const data = prompt('Data de pagamento (AAAA-MM-DD):') || new Date().toISOString().slice(0, 10)
+  function abrirPagar(id) {
+    setFormPagar({ dataPagamento: new Date().toISOString().slice(0, 10), formaPagamento: 'Pix' })
+    setModalPagar({ despesaId: id })
+  }
+
+  async function confirmarPagamento() {
+    if (!formPagar.dataPagamento) { mostrarAlerta('error', 'Informe a data de pagamento.'); return }
     try {
-      await despesasApi.marcarComoPaga(id, { dataPagamento: data, formaPagamento: 'Pix', observacao: null })
+      await despesasApi.marcarComoPaga(modalPagar.despesaId, {
+        dataPagamento:  formPagar.dataPagamento,
+        formaPagamento: FORMAS_ENUM[formPagar.formaPagamento],
+        observacao:     null,
+      })
+      setModalPagar(null)
       mostrarAlerta('success', 'Despesa marcada como paga.')
       await carregar()
     } catch { mostrarAlerta('error', 'Erro ao marcar como paga.') }
@@ -119,11 +136,12 @@ export default function DespesasPage({ usuario }) {
 
       <table className="table">
         <thead>
-          <tr><th>Descrição</th><th>Categoria</th><th>Competência</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
+          <tr><th>Filial</th><th>Descrição</th><th>Categoria</th><th>Competência</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
         </thead>
         <tbody>
           {despesas.map(d => (
             <tr key={d.id}>
+              <td>{d.nomeFilial}</td>
               <td>{d.descricao}</td>
               <td>{d.categoria} / {d.subcategoria}</td>
               <td>{d.dataCompetencia}</td>
@@ -131,7 +149,7 @@ export default function DespesasPage({ usuario }) {
               <td><span className={`badge ${STATUS_CORES[d.status] || ''}`}>{d.status}</span></td>
               <td>
                 {d.status === 'APagar' && (
-                  <button className="btn btn-sm btn-primary" onClick={() => marcarPaga(d.id)}>Pagar</button>
+                  <button className="btn btn-sm btn-primary" onClick={() => abrirPagar(d.id)}>Pagar</button>
                 )}
                 {d.status !== 'Cancelada' && (
                   <button className="btn btn-sm btn-danger" onClick={() => cancelar(d.id)}>Cancelar</button>
@@ -148,6 +166,7 @@ export default function DespesasPage({ usuario }) {
         <button className="btn btn-secondary" onClick={() => setPagina(p => p + 1)} disabled={pagina >= totalPaginas}>Próximo</button>
       </div>
 
+      {/* Modal: Nova Despesa */}
       {modal === 'nova' && (
         <div className="modal-overlay">
           <div className="modal">
@@ -187,15 +206,17 @@ export default function DespesasPage({ usuario }) {
               </div>
               <div>
                 <label>Competência *</label>
-                <input type="month" className="input" value={form.dataCompetencia}
-                  onChange={e => setForm({ ...form, dataCompetencia: e.target.value + '-01' })} />
+                <MonthPicker
+                  value={form.dataCompetencia ? form.dataCompetencia.slice(0, 7) : ''}
+                  onChange={v => setForm({ ...form, dataCompetencia: v ? v + '-01' : '' })}
+                />
               </div>
             </div>
             <div className="form-row">
               <div>
                 <label>Data Pagamento</label>
-                <input type="date" className="input" value={form.dataPagamento}
-                  onChange={e => setForm({ ...form, dataPagamento: e.target.value })} />
+                <DatePicker value={form.dataPagamento}
+                  onChange={v => setForm({ ...form, dataPagamento: v })} minYear={2020} />
               </div>
               <div>
                 <label>Forma Pagamento</label>
@@ -212,6 +233,27 @@ export default function DespesasPage({ usuario }) {
             <div className="form-actions">
               <button className="btn btn-primary" onClick={salvar}>Salvar</button>
               <button className="btn btn-secondary" onClick={() => setModal(null)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Pagar Despesa */}
+      {modalPagar && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Registrar Pagamento</h3>
+            <label>Data de Pagamento *</label>
+            <DatePicker value={formPagar.dataPagamento}
+              onChange={v => setFormPagar({ ...formPagar, dataPagamento: v })} minYear={2020} />
+            <label>Forma de Pagamento</label>
+            <select className="input" value={formPagar.formaPagamento}
+              onChange={e => setFormPagar({ ...formPagar, formaPagamento: e.target.value })}>
+              {FORMAS.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <div className="form-actions">
+              <button className="btn btn-primary" onClick={confirmarPagamento}>Confirmar</button>
+              <button className="btn btn-secondary" onClick={() => setModalPagar(null)}>Cancelar</button>
             </div>
           </div>
         </div>

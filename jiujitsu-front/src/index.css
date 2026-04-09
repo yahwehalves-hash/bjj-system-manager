@@ -316,7 +316,9 @@ main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
   gap: 12px;
 }
 .form-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; align-items: end; }
+.form-grid > div { display: flex; flex-direction: column; gap: 4px; }
+.form-grid > div label { font-size: 0.85rem; font-weight: 600; color: #4a5568; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-actions { display: flex; gap: 10px; margin-top: 4px; }
 .hint { font-size: 0.82rem; color: #718096; margin-top: -8px; }
@@ -395,6 +397,25 @@ main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
 .modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
 .modal label { font-size: 0.85rem; font-weight: 600; color: #4a5568; }
 .modal .form-actions { margin-top: 8px; }
+
+/* ── DatePicker ─────────────────────────────── */
+.datepicker { display: flex; gap: 6px; }
+.datepicker select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: #fff;
+  min-width: 0;
+}
+.datepicker select:focus { outline: none; border-color: #cc0000; }
+
+/* ── Detalhe atleta ─────────────────────────── */
+.detalhe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-top: 4px; }
+.detalhe-item { display: flex; flex-direction: column; gap: 2px; }
+.detalhe-item span:first-child { font-size: 0.75rem; font-weight: 600; color: #718096; text-transform: uppercase; }
+.detalhe-item span:last-child  { font-size: 0.95rem; color: #2d3748; }
 
 /* ── Dashboard ──────────────────────────────── */
 .dashboard-card {
