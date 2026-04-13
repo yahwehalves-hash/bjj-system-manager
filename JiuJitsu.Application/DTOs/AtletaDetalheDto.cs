@@ -4,6 +4,7 @@ namespace JiuJitsu.Application.DTOs;
 public record AtletaDetalheDto(
     Guid      Id,
     Guid      FilialId,
+    string?   NomeFilial,
     string    NomeCompleto,
     string    Cpf,
     DateOnly  DataNascimento,

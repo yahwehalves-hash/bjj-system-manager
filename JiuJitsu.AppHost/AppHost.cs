@@ -4,7 +4,8 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Banco de dados PostgreSQL
 var postgres = builder
     .AddPostgres("postgres")
-    .WithHostPort(5432)  // Porta fixa para facilitar conexão via DBeaver
+    .WithHostPort(5432)        // Porta fixa para facilitar conexão via DBeaver
+    .WithDataVolume()          // Persiste os dados entre restarts
     .WithPgAdmin(); // Painel visual do PostgreSQL acessível pelo dashboard do Aspire
 
 var bancoDados = postgres.AddDatabase("jiujitsu-db");

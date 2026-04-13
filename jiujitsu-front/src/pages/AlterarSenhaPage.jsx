@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { authApi } from '../api/authApi';
 
-export function LoginPage({ onLogin }) {
-  const [modo, setModo] = useState('login'); // 'login' | 'registrar'
-  const [form, setForm] = useState({ nome: '', email: '', senha: '' });
+export function AlterarSenhaPage({ usuario, onSenhaAlterada }) {
+  const [form, setForm] = useState({ senhaAtual: '', novaSenha: '', confirmar: '' });
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
@@ -14,20 +13,22 @@ export function LoginPage({ onLogin }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setErro('');
+
+    if (form.novaSenha !== form.confirmar) {
+      setErro('As senhas não coincidem.');
+      return;
+    }
+    if (form.novaSenha.length < 6) {
+      setErro('A nova senha deve ter no mínimo 6 caracteres.');
+      return;
+    }
+
     setCarregando(true);
     try {
-      if (modo === 'login') {
-        const dados = await authApi.login(form.email, form.senha);
-        localStorage.setItem('token', dados.token);
-        onLogin({ nome: dados.nome, email: dados.email, role: dados.role, deveAlterarSenha: dados.deveAlterarSenha });
-      } else {
-        await authApi.registrar(form.nome, form.email, form.senha);
-        setModo('login');
-        setErro('');
-        setForm((prev) => ({ ...prev, nome: '', senha: '' }));
-      }
+      await authApi.alterarSenha(form.senhaAtual, form.novaSenha);
+      onSenhaAlterada();
     } catch (err) {
-      setErro(err.response?.data?.erro || 'Erro ao processar. Tente novamente.');
+      setErro(err.response?.data?.erro || 'Erro ao alterar senha. Tente novamente.');
     } finally {
       setCarregando(false);
     }
@@ -47,49 +48,44 @@ export function LoginPage({ onLogin }) {
 
         <h1 className="login-titulo">TRINITY</h1>
         <p className="login-subtitulo">JIU-JITSU</p>
-        <p className="login-descricao">Sistema de Gestão</p>
+        <p className="login-descricao" style={{ textAlign: 'center', color: '#cc0000' }}>
+          Olá, {usuario.nome}! Por segurança, defina uma nova senha antes de continuar.
+        </p>
 
         {erro && <div className="login-erro">{erro}</div>}
 
         <form className="login-form" onSubmit={handleSubmit}>
-          {modo === 'registrar' && (
-            <>
-              <input
-                className="login-input"
-                name="nome"
-                placeholder="Nome completo"
-                value={form.nome}
-                onChange={handleChange}
-                required
-              />
-            </>
-          )}
           <input
             className="login-input"
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={form.email}
+            name="senhaAtual"
+            type="password"
+            placeholder="Senha atual"
+            value={form.senhaAtual}
             onChange={handleChange}
             required
           />
           <input
             className="login-input"
-            name="senha"
+            name="novaSenha"
             type="password"
-            placeholder="Senha"
-            value={form.senha}
+            placeholder="Nova senha (mínimo 6 caracteres)"
+            value={form.novaSenha}
+            onChange={handleChange}
+            required
+          />
+          <input
+            className="login-input"
+            name="confirmar"
+            type="password"
+            placeholder="Confirmar nova senha"
+            value={form.confirmar}
             onChange={handleChange}
             required
           />
           <button className="btn-login" type="submit" disabled={carregando}>
-            {carregando ? 'Aguarde...' : modo === 'login' ? 'Entrar' : 'Criar Conta'}
+            {carregando ? 'Salvando...' : 'Definir nova senha'}
           </button>
         </form>
-
-        <button className="login-troca-modo" onClick={() => { setModo(modo === 'login' ? 'registrar' : 'login'); setErro(''); }}>
-          {modo === 'login' ? 'Criar uma conta' : 'Já tenho uma conta'}
-        </button>
 
         <p className="login-rodape">Trinity Jiu-Jitsu © {new Date().getFullYear()}</p>
       </div>

@@ -3,11 +3,13 @@ import { BrowserRouter, NavLink, Navigate, Route, Routes } from 'react-router-do
 import { ListaPage } from './pages/ListaPage';
 import { FormPage } from './pages/FormPage';
 import { LoginPage } from './pages/LoginPage';
+import { AlterarSenhaPage } from './pages/AlterarSenhaPage';
 import DashboardPage from './pages/DashboardPage';
 import FiliaisPage from './pages/FiliaisPage';
 import MensalidadesPage from './pages/MensalidadesPage';
 import DespesasPage from './pages/DespesasPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
+import UsuariosPage from './pages/UsuariosPage';
 
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
@@ -17,20 +19,33 @@ export default function App() {
       const payload = JSON.parse(atob(token.split('.')[1]));
       if (payload.exp * 1000 < Date.now()) { localStorage.removeItem('token'); return null; }
       return {
-        nome: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+        nome:  payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
         email: payload.email,
-        role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+        role:  payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+        deveAlterarSenha: false, // token existente = sessão já validada anteriormente
       };
     } catch { localStorage.removeItem('token'); return null; }
   });
+
+  function handleLogin(dados) {
+    setUsuario(dados);
+  }
 
   function handleLogout() {
     localStorage.removeItem('token');
     setUsuario(null);
   }
 
+  function handleSenhaAlterada() {
+    setUsuario((prev) => ({ ...prev, deveAlterarSenha: false }));
+  }
+
   if (!usuario) {
-    return <LoginPage onLogin={(dados) => setUsuario(dados)} />;
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  if (usuario.deveAlterarSenha) {
+    return <AlterarSenhaPage usuario={usuario} onSenhaAlterada={handleSenhaAlterada} />;
   }
 
   const isAdmin = usuario.role === 'Admin';
@@ -42,15 +57,16 @@ export default function App() {
           <span className="navbar-trinity">TRINITY</span> JIU-JITSU
         </span>
         <div className="navbar-links">
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Dashboard</NavLink>
-          <NavLink to="/atletas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Atletas</NavLink>
+          <NavLink to="/dashboard"    className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Dashboard</NavLink>
+          <NavLink to="/atletas"      className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Atletas</NavLink>
           <NavLink to="/mensalidades" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Mensalidades</NavLink>
           {(isAdmin || usuario.role === 'GestorFilial') && (
             <NavLink to="/despesas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Despesas</NavLink>
           )}
           {isAdmin && (
             <>
-              <NavLink to="/filiais" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Filiais</NavLink>
+              <NavLink to="/filiais"       className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Filiais</NavLink>
+              <NavLink to="/usuarios"      className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Usuários</NavLink>
               <NavLink to="/configuracoes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Configurações</NavLink>
             </>
           )}
@@ -70,6 +86,7 @@ export default function App() {
           <Route path="/mensalidades"           element={<MensalidadesPage usuario={usuario} />} />
           <Route path="/despesas"               element={<DespesasPage usuario={usuario} />} />
           <Route path="/filiais"                element={isAdmin ? <FiliaisPage /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/usuarios"               element={isAdmin ? <UsuariosPage /> : <Navigate to="/dashboard" replace />} />
           <Route path="/configuracoes"          element={isAdmin ? <ConfiguracoesPage usuario={usuario} /> : <Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

@@ -2,6 +2,7 @@ using System.Text;
 using JiuJitsu.Application;
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Api.Services;
+using JiuJitsu.Domain.Entities;
 using JiuJitsu.Infrastructure;
 using JiuJitsu.Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -64,12 +65,33 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Aplica migrations automaticamente no ambiente de desenvolvimento
-if (app.Environment.IsDevelopment())
+// Aplica migrations e seed de admin inicial
 {
     using var escopo = app.Services.CreateScope();
     var contexto = escopo.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger   = escopo.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
     await contexto.Database.MigrateAsync();
+
+    var adminEmail = app.Configuration["AdminInicial:Email"];
+    var adminSenha = app.Configuration["AdminInicial:Senha"];
+
+    if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminSenha))
+    {
+        var jaExisteAdmin = await contexto.Usuarios.AnyAsync(u => u.Role == "Admin");
+        if (!jaExisteAdmin)
+        {
+            var hash  = BCrypt.Net.BCrypt.HashPassword(adminSenha);
+            var admin = new Usuario("Administrador", adminEmail, hash, "Admin", deveAlterarSenha: true);
+            contexto.Usuarios.Add(admin);
+            await contexto.SaveChangesAsync();
+            logger.LogInformation("Admin inicial criado: {Email}. Troque a senha no primeiro acesso.", adminEmail);
+        }
+    }
+    else
+    {
+        logger.LogWarning("AdminInicial não configurado. Nenhum admin foi criado automaticamente.");
+    }
 }
 
 app.MapDefaultEndpoints();
