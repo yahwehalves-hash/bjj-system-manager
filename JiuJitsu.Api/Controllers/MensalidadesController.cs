@@ -115,6 +115,16 @@ public class MensalidadesController : ControllerBase
         var total = await _mediator.Send(new GerarMensalidadesCommand(request.Competencia), cancellationToken);
         return Ok(new { mensalidadesGeradas = total });
     }
+
+    /// <summary>Força atualização de status de mensalidades vencidas/inadimplentes. Apenas Admin.</summary>
+    [HttpPost("atualizar-status")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AtualizarStatus(CancellationToken cancellationToken)
+    {
+        var total = await _mediator.Send(new AtualizarStatusVencidasCommand(), cancellationToken);
+        return Ok(new { mensalidadesAtualizadas = total });
+    }
 }
 
 public record RegistrarPagamentoRequest(

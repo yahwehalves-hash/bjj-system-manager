@@ -27,6 +27,7 @@ export default function MensalidadesPage({ usuario }) {
   const [modalGerar, setModalGerar]     = useState(false)
   const [competenciaGerar, setCompetenciaGerar] = useState('')
   const [gerando, setGerando]           = useState(false)
+  const [atualizandoStatus, setAtualizandoStatus] = useState(false)
   const tamanhoPagina = 15
 
   useEffect(() => { carregar() }, [pagina, filtros])
@@ -119,6 +120,20 @@ export default function MensalidadesPage({ usuario }) {
     }
   }
 
+  async function atualizarStatus() {
+    setAtualizandoStatus(true)
+    try {
+      const res = await mensalidadesApi.atualizarStatus()
+      const atualizadas = res.data?.mensalidadesAtualizadas ?? 0
+      mostrarAlerta('success', `${atualizadas} mensalidade(s) tiveram status atualizado.`)
+      await carregar()
+    } catch (e) {
+      mostrarAlerta('error', e.response?.data?.erro || 'Erro ao atualizar status.')
+    } finally {
+      setAtualizandoStatus(false)
+    }
+  }
+
   const totalPaginas = Math.ceil(total / tamanhoPagina)
 
   return (
@@ -126,9 +141,14 @@ export default function MensalidadesPage({ usuario }) {
       <div className="page-header">
         <h2>Mensalidades</h2>
         {isAdmin && (
-          <button className="btn btn-primary" onClick={() => setModalGerar(true)}>
-            Gerar Mensalidades
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-secondary" onClick={atualizarStatus} disabled={atualizandoStatus}>
+              {atualizandoStatus ? 'Atualizando...' : 'Atualizar Status'}
+            </button>
+            <button className="btn btn-primary" onClick={() => setModalGerar(true)}>
+              Gerar Mensalidades
+            </button>
+          </div>
         )}
       </div>
 

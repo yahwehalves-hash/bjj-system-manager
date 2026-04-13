@@ -15,4 +15,5 @@ export const mensalidadesApi = {
   negociar:          (id, dados) => api.post(`/api/mensalidades/${id}/negociacao`, dados),
   cancelar:          (id, motivo) => api.delete(`/api/mensalidades/${id}`, { data: { motivo } }),
   gerar:             (competencia) => api.post('/api/mensalidades/gerar', { competencia }),
+  atualizarStatus:   ()           => api.post('/api/mensalidades/atualizar-status'),
 }
