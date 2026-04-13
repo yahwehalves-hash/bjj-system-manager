@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using JiuJitsu.Domain.Entities;
 using JiuJitsu.Infrastructure.Persistence.Context;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -22,7 +23,7 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
-    /// <summary>Registra um novo usuário</summary>
+    /// <summary>Registra um novo usuário — role sempre definida como Aluno</summary>
     [HttpPost("registrar")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -32,7 +33,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { erro = "Email já cadastrado." });
 
         var hash    = BCrypt.Net.BCrypt.HashPassword(request.Senha);
-        var usuario = new Usuario(request.Nome, request.Email, hash, request.Role ?? "Aluno");
+        var usuario = new Usuario(request.Nome, request.Email, hash, "Aluno");
 
         _db.Usuarios.Add(usuario);
         await _db.SaveChangesAsync(ct);
@@ -54,12 +55,39 @@ public class AuthController : ControllerBase
 
         var token = GerarToken(usuario);
 
-        return Ok(new { token, usuario.Nome, usuario.Email, usuario.Role });
+        return Ok(new { token, usuario.Nome, usuario.Email, usuario.Role, usuario.DeveAlterarSenha });
+    }
+
+    /// <summary>Troca a senha do usuário autenticado</summary>
+    [HttpPost("alterar-senha")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaRequest request, CancellationToken ct)
+    {
+        var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        if (!Guid.TryParse(idClaim, out var userId))
+            return Unauthorized();
+
+        var usuario = await _db.Usuarios.FindAsync([userId], ct);
+        if (usuario is null) return NotFound();
+
+        if (!BCrypt.Net.BCrypt.Verify(request.SenhaAtual, usuario.SenhaHash))
+            return BadRequest(new { erro = "Senha atual incorreta." });
+
+        if (request.NovaSenha.Length < 6)
+            return BadRequest(new { erro = "A nova senha deve ter no mínimo 6 caracteres." });
+
+        usuario.AlterarSenha(BCrypt.Net.BCrypt.HashPassword(request.NovaSenha));
+        await _db.SaveChangesAsync(ct);
+
+        return NoContent();
     }
 
     private string GerarToken(Usuario usuario)
     {
-        var chave    = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Chave"]!));
+        var chave      = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Chave"]!));
         var credencial = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
@@ -86,4 +114,5 @@ public class AuthController : ControllerBase
 }
 
 public record LoginRequest(string Email, string Senha);
-public record RegistrarRequest(string Nome, string Email, string Senha, string? Role);
+public record RegistrarRequest(string Nome, string Email, string Senha);
+public record AlterarSenhaRequest(string SenhaAtual, string NovaSenha);

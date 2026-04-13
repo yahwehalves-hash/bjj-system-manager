@@ -131,6 +131,17 @@ body {
   text-align: center;
 }
 
+.login-sucesso {
+  background: rgba(0, 180, 100, 0.15);
+  border: 1px solid #00b464;
+  color: #00e07a;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  width: 100%;
+  text-align: center;
+}
+
 .login-troca-modo {
   background: transparent;
   border: none;

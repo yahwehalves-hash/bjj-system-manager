@@ -367,6 +367,9 @@ namespace JiuJitsu.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("criado_em");
 
+                    b.Property<bool>("DeveAlterarSenha")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(200)

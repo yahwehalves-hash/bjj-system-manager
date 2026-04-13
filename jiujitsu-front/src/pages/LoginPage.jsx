@@ -3,7 +3,7 @@ import { authApi } from '../api/authApi';
 
 export function LoginPage({ onLogin }) {
   const [modo, setModo] = useState('login'); // 'login' | 'registrar'
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', role: 'Aluno' });
+  const [form, setForm] = useState({ nome: '', email: '', senha: '' });
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
@@ -19,9 +19,9 @@ export function LoginPage({ onLogin }) {
       if (modo === 'login') {
         const dados = await authApi.login(form.email, form.senha);
         localStorage.setItem('token', dados.token);
-        onLogin({ nome: dados.nome, email: dados.email, role: dados.role });
+        onLogin({ nome: dados.nome, email: dados.email, role: dados.role, deveAlterarSenha: dados.deveAlterarSenha });
       } else {
-        await authApi.registrar(form.nome, form.email, form.senha, form.role);
+        await authApi.registrar(form.nome, form.email, form.senha);
         setModo('login');
         setErro('');
         setForm((prev) => ({ ...prev, nome: '', senha: '' }));
@@ -62,11 +62,6 @@ export function LoginPage({ onLogin }) {
                 onChange={handleChange}
                 required
               />
-              <select className="login-input" name="role" value={form.role} onChange={handleChange}>
-                <option value="Aluno">Aluno</option>
-                <option value="Professor">Professor</option>
-                <option value="Admin">Admin</option>
-              </select>
             </>
           )}
           <input

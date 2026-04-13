@@ -21,20 +21,22 @@ public class AtletaReadRepository : IAtletaReadRepository
     {
         const string sql = """
             SELECT
-                id              AS Id,
-                filial_id       AS FilialId,
-                nome_completo   AS NomeCompleto,
-                cpf             AS Cpf,
-                data_nascimento AS DataNascimento,
-                faixa           AS Faixa,
-                grau            AS Grau,
-                data_ultima_graduacao AS DataUltimaGraduacao,
-                email           AS Email,
-                ativo           AS Ativo,
-                criado_em       AS CriadoEm,
-                atualizado_em   AS AtualizadoEm
-            FROM atletas
-            WHERE id = @Id AND ativo = true
+                a.id                    AS Id,
+                a.filial_id             AS FilialId,
+                f.nome                  AS NomeFilial,
+                a.nome_completo         AS NomeCompleto,
+                a.cpf                   AS Cpf,
+                a.data_nascimento       AS DataNascimento,
+                a.faixa                 AS Faixa,
+                a.grau                  AS Grau,
+                a.data_ultima_graduacao AS DataUltimaGraduacao,
+                a.email                 AS Email,
+                a.ativo                 AS Ativo,
+                a.criado_em             AS CriadoEm,
+                a.atualizado_em         AS AtualizadoEm
+            FROM atletas a
+            LEFT JOIN filiais f ON f.id = a.filial_id
+            WHERE a.id = @Id AND a.ativo = true
             """;
 
         await using var conexao = new NpgsqlConnection(_connectionString);
