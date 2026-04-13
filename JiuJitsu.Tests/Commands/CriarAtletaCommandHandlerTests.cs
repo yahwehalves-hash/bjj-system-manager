@@ -3,6 +3,7 @@ using JiuJitsu.Application.Commands.CriarAtleta;
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Contracts.Mensagens;
 using JiuJitsu.Domain.Enums;
+using JiuJitsu.Domain.Repositories;
 using NSubstitute;
 
 namespace JiuJitsu.Tests.Commands;
@@ -10,11 +11,15 @@ namespace JiuJitsu.Tests.Commands;
 public class CriarAtletaCommandHandlerTests
 {
     private readonly IMessagePublisher _publisher = Substitute.For<IMessagePublisher>();
+    private readonly IAtletaRepository _atletaRepository = Substitute.For<IAtletaRepository>();
     private readonly CriarAtletaCommandHandler _handler;
 
     public CriarAtletaCommandHandlerTests()
     {
-        _handler = new CriarAtletaCommandHandler(_publisher);
+        _atletaRepository.ExisteCpfAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
+        _atletaRepository.ExisteEmailAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
+
+        _handler = new CriarAtletaCommandHandler(_publisher, _atletaRepository);
     }
 
     [Fact]

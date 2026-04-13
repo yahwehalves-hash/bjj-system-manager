@@ -1,5 +1,6 @@
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Contracts.Mensagens;
+using JiuJitsu.Domain.Repositories;
 using JiuJitsu.Domain.ValueObjects;
 using MediatR;
 
@@ -8,12 +9,18 @@ namespace JiuJitsu.Application.Commands.CriarAtleta;
 public class CriarAtletaCommandHandler : IRequestHandler<CriarAtletaCommand, Guid>
 {
     private readonly IMessagePublisher _publisher;
+    private readonly IAtletaRepository _atletaRepository;
 
-    public CriarAtletaCommandHandler(IMessagePublisher publisher) => _publisher = publisher;
+    public CriarAtletaCommandHandler(IMessagePublisher publisher, IAtletaRepository atletaRepository)
+    {
+        _publisher = publisher;
+        _atletaRepository = atletaRepository;
+    }
 
     public async Task<Guid> Handle(CriarAtletaCommand request, CancellationToken cancellationToken)
     {
         Validar(request);
+        await ValidarDuplicatasAsync(request, cancellationToken);
 
         // Gera o ID aqui para retornar imediatamente ao cliente
         // O Worker usará este mesmo ID ao salvar no banco
@@ -56,5 +63,17 @@ public class CriarAtletaCommandHandler : IRequestHandler<CriarAtletaCommand, Gui
         // Reutiliza os Value Objects do domínio para validar CPF e Email
         _ = new Cpf(request.Cpf);
         _ = new Email(request.Email);
+    }
+
+    private async Task ValidarDuplicatasAsync(CriarAtletaCommand request, CancellationToken cancellationToken)
+    {
+        var cpfNormalizado = request.Cpf.Replace(".", "").Replace("-", "").Trim();
+        var emailNormalizado = request.Email.Trim().ToLowerInvariant();
+
+        if (await _atletaRepository.ExisteCpfAsync(cpfNormalizado, cancellationToken))
+            throw new InvalidOperationException($"Já existe um atleta cadastrado com o CPF informado.");
+
+        if (await _atletaRepository.ExisteEmailAsync(emailNormalizado, cancellationToken))
+            throw new InvalidOperationException($"Já existe um atleta cadastrado com o e-mail informado.");
     }
 }

@@ -102,9 +102,10 @@ app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
     ctx.Response.ContentType = "application/json";
     ctx.Response.StatusCode = ex switch
     {
-        ArgumentException   => StatusCodes.Status400BadRequest,
-        KeyNotFoundException => StatusCodes.Status404NotFound,
-        _                   => StatusCodes.Status500InternalServerError
+        ArgumentException        => StatusCodes.Status400BadRequest,
+        InvalidOperationException => StatusCodes.Status409Conflict,
+        KeyNotFoundException      => StatusCodes.Status404NotFound,
+        _                        => StatusCodes.Status500InternalServerError
     };
     await ctx.Response.WriteAsJsonAsync(new { erro = ex?.Message });
 }));
