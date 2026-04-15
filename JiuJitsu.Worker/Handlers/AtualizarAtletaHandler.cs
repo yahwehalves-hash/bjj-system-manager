@@ -1,5 +1,6 @@
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Contracts.Mensagens;
+using JiuJitsu.Domain.Entities;
 using JiuJitsu.Domain.Enums;
 using JiuJitsu.Domain.Repositories;
 using JiuJitsu.Domain.ValueObjects;
@@ -9,18 +10,21 @@ namespace JiuJitsu.Worker.Handlers;
 
 public class AtualizarAtletaHandler
 {
-    private readonly IAtletaRepository _repositorio;
-    private readonly IEmailService     _emailService;
+    private readonly IAtletaRepository              _repositorio;
+    private readonly IHistoricoGraduacaoRepository  _historicoRepositorio;
+    private readonly IEmailService                  _emailService;
     private readonly ILogger<AtualizarAtletaHandler> _logger;
 
     public AtualizarAtletaHandler(
-        IAtletaRepository repositorio,
-        IEmailService emailService,
+        IAtletaRepository              repositorio,
+        IHistoricoGraduacaoRepository  historicoRepositorio,
+        IEmailService                  emailService,
         ILogger<AtualizarAtletaHandler> logger)
     {
-        _repositorio  = repositorio;
-        _emailService = emailService;
-        _logger       = logger;
+        _repositorio          = repositorio;
+        _historicoRepositorio = historicoRepositorio;
+        _emailService         = emailService;
+        _logger               = logger;
     }
 
     public async Task ProcessarAsync(AtletaMensagem mensagem, CancellationToken cancellationToken)
@@ -34,13 +38,31 @@ public class AtualizarAtletaHandler
             return;
         }
 
+        var novaFaixa = Enum.Parse<Faixa>(payload.Faixa);
+        var novoGrau  = (Grau)payload.Grau;
+        var graduacaoMudou = atleta.Faixa != novaFaixa || atleta.Grau != novoGrau;
+
         atleta.Atualizar(
             nomeCompleto:        payload.NomeCompleto,
             dataNascimento:      payload.DataNascimento,
-            faixa:               Enum.Parse<Faixa>(payload.Faixa),
-            grau:                (Grau)payload.Grau,
+            faixa:               novaFaixa,
+            grau:                novoGrau,
             dataUltimaGraduacao: payload.DataUltimaGraduacao,
             email:               new Email(payload.Email));
+
+        if (graduacaoMudou)
+        {
+            var historicoAtual = await _historicoRepositorio.ObterAtualAsync(atleta.Id, cancellationToken);
+            historicoAtual?.Fechar(payload.DataUltimaGraduacao.AddDays(-1));
+
+            var novoHistorico = new HistoricoGraduacao(
+                atletaId:   atleta.Id,
+                faixa:      novaFaixa,
+                grau:       novoGrau,
+                dataInicio: payload.DataUltimaGraduacao);
+
+            await _historicoRepositorio.AdicionarAsync(novoHistorico, cancellationToken);
+        }
 
         await _repositorio.AtualizarAsync(atleta, cancellationToken);
         await _repositorio.SalvarAlteracoesAsync(cancellationToken);

@@ -7,13 +7,23 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 const GRAUS = ['', '1°', '2°', '3°', '4°'];
 
 const COR_FAIXA = {
-  Branca:  '#ffffff',
+  Branca:  '#e0e0e0',
   Cinza:   '#9e9e9e',
   Azul:    '#1565c0',
   Roxa:    '#6a1b9a',
   Marrom:  '#5d4037',
   Preta:   '#212121',
 };
+
+function ponteira(faixa) {
+  return faixa === 'Preta' ? '#c62828' : '#1a1a1a';
+}
+
+function gradienteFaixa(faixa) {
+  const cor = COR_FAIXA[faixa] ?? '#ccc';
+  const tip = ponteira(faixa);
+  return `linear-gradient(180deg, ${cor} 75%, ${tip} 75%)`;
+}
 
 function formatarData(iso) {
   if (!iso) return '—';
@@ -121,7 +131,7 @@ export function ListaPage() {
                       <span
                         className="faixa-barra"
                         style={{
-                          background: COR_FAIXA[atleta.faixa] ?? '#ccc',
+                          background: gradienteFaixa(atleta.faixa),
                           border: atleta.faixa === 'Branca' ? '1px solid #ccc' : 'none',
                         }}
                       />
@@ -137,6 +147,12 @@ export function ListaPage() {
                       onClick={() => verDetalhe(atleta.id)}
                     >
                       Detalhes
+                    </button>
+                    <button
+                      className="btn-secundario btn-sm"
+                      onClick={() => navigate(`/atletas/${atleta.id}/historico`)}
+                    >
+                      Histórico
                     </button>
                     <button
                       className="btn-secundario btn-sm"
@@ -199,7 +215,7 @@ export function ListaPage() {
                   width: 8,
                   height: 48,
                   borderRadius: 4,
-                  background: COR_FAIXA[detalhe.faixa] ?? '#ccc',
+                  background: gradienteFaixa(detalhe.faixa),
                   border: detalhe.faixa === 'Branca' ? '1px solid #ccc' : 'none',
                   flexShrink: 0,
                 }}

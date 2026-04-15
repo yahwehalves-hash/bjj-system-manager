@@ -31,6 +31,7 @@ public class AtletaReadRepository : IAtletaReadRepository
                 a.grau                  AS Grau,
                 a.data_ultima_graduacao AS DataUltimaGraduacao,
                 a.email                 AS Email,
+                a.foto_base64           AS FotoBase64,
                 a.ativo                 AS Ativo,
                 a.criado_em             AS CriadoEm,
                 a.atualizado_em         AS AtualizadoEm

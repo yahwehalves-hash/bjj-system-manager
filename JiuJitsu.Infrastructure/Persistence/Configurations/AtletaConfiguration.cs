@@ -36,7 +36,8 @@ public class AtletaConfiguration : IEntityTypeConfiguration<Atleta>
                 .HasColumnName("cpf")
                 .HasMaxLength(11)
                 .IsRequired();
-            cpf.HasIndex(c => c.Valor).IsUnique();
+            // Partial index — atletas inativos (soft delete) não participam da constraint
+            cpf.HasIndex(c => c.Valor).IsUnique().HasFilter("ativo = true");
         });
 
         // Email é um Value Object — armazenado como coluna simples
@@ -46,7 +47,8 @@ public class AtletaConfiguration : IEntityTypeConfiguration<Atleta>
                 .HasColumnName("email")
                 .HasMaxLength(254)
                 .IsRequired();
-            email.HasIndex(e => e.Valor).IsUnique();
+            // Partial index — atletas inativos (soft delete) não participam da constraint
+            email.HasIndex(e => e.Valor).IsUnique().HasFilter("ativo = true");
         });
 
         builder.Property(a => a.DataNascimento)
@@ -79,6 +81,9 @@ public class AtletaConfiguration : IEntityTypeConfiguration<Atleta>
 
         builder.Property(a => a.AtualizadoEm)
             .HasColumnName("atualizado_em");
+
+        builder.Property(a => a.FotoBase64)
+            .HasColumnName("foto_base64");
 
         // Filtro global de soft delete — consultas só retornam atletas ativos por padrão
         builder.HasQueryFilter(a => a.Ativo);

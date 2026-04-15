@@ -3,6 +3,7 @@ using System;
 using JiuJitsu.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JiuJitsu.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260415132240_AddHistoricoGraduacaoEFoto")]
+    partial class AddHistoricoGraduacaoEFoto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -467,8 +470,7 @@ namespace JiuJitsu.Infrastructure.Migrations
                             b1.HasKey("AtletaId");
 
                             b1.HasIndex("Valor")
-                                .IsUnique()
-                                .HasFilter("ativo = true");
+                                .IsUnique();
 
                             b1.ToTable("atletas");
 
@@ -490,8 +492,7 @@ namespace JiuJitsu.Infrastructure.Migrations
                             b1.HasKey("AtletaId");
 
                             b1.HasIndex("Valor")
-                                .IsUnique()
-                                .HasFilter("ativo = true");
+                                .IsUnique();
 
                             b1.ToTable("atletas");
 

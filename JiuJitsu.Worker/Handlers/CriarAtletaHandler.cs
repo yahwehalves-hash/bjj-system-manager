@@ -10,26 +10,27 @@ namespace JiuJitsu.Worker.Handlers;
 
 public class CriarAtletaHandler
 {
-    private readonly IAtletaRepository _repositorio;
-    private readonly IEmailService     _emailService;
-    private readonly ILogger<CriarAtletaHandler> _logger;
+    private readonly IAtletaRepository              _repositorio;
+    private readonly IHistoricoGraduacaoRepository  _historicoRepositorio;
+    private readonly IEmailService                  _emailService;
+    private readonly ILogger<CriarAtletaHandler>    _logger;
 
     public CriarAtletaHandler(
-        IAtletaRepository repositorio,
-        IEmailService emailService,
-        ILogger<CriarAtletaHandler> logger)
+        IAtletaRepository             repositorio,
+        IHistoricoGraduacaoRepository historicoRepositorio,
+        IEmailService                 emailService,
+        ILogger<CriarAtletaHandler>   logger)
     {
-        _repositorio  = repositorio;
-        _emailService = emailService;
-        _logger       = logger;
+        _repositorio          = repositorio;
+        _historicoRepositorio = historicoRepositorio;
+        _emailService         = emailService;
+        _logger               = logger;
     }
 
     public async Task ProcessarAsync(AtletaMensagem mensagem, CancellationToken cancellationToken)
     {
         var payload = mensagem.Payload!;
 
-        // O Worker cria o atleta com um novo ID gerado no construtor.
-        // O ID retornado pela API é apenas um correlation ID para rastreamento.
         var atleta = new Atleta(
             filialId:            payload.FilialId,
             nomeCompleto:        payload.NomeCompleto,
@@ -41,6 +42,14 @@ public class CriarAtletaHandler
             email:               new Email(payload.Email));
 
         await _repositorio.AdicionarAsync(atleta, cancellationToken);
+
+        var historico = new HistoricoGraduacao(
+            atletaId:   atleta.Id,
+            faixa:      atleta.Faixa,
+            grau:       atleta.Grau,
+            dataInicio: atleta.DataUltimaGraduacao);
+
+        await _historicoRepositorio.AdicionarAsync(historico, cancellationToken);
         await _repositorio.SalvarAlteracoesAsync(cancellationToken);
 
         _logger.LogInformation("Atleta '{Nome}' criado com sucesso (Id: {Id})", payload.NomeCompleto, atleta.Id);

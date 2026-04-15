@@ -10,6 +10,7 @@ import MensalidadesPage from './pages/MensalidadesPage';
 import DespesasPage from './pages/DespesasPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import UsuariosPage from './pages/UsuariosPage';
+import HistoricoPage from './pages/HistoricoPage';
 
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/atletas"                element={<ListaPage />} />
           <Route path="/atletas/novo"           element={<FormPage usuario={usuario} />} />
           <Route path="/atletas/:id/editar"     element={<FormPage usuario={usuario} />} />
+          <Route path="/atletas/:id/historico"  element={<HistoricoPage />} />
           <Route path="/mensalidades"           element={<MensalidadesPage usuario={usuario} />} />
           <Route path="/despesas"               element={<DespesasPage usuario={usuario} />} />
           <Route path="/filiais"                element={isAdmin ? <FiliaisPage /> : <Navigate to="/dashboard" replace />} />

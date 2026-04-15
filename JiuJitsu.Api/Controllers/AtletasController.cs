@@ -1,10 +1,13 @@
+using JiuJitsu.Application.Commands.AdicionarHistoricoManual;
 using JiuJitsu.Application.Commands.AtualizarAtleta;
+using JiuJitsu.Application.Commands.AtualizarFotoAtleta;
 using JiuJitsu.Application.Commands.CriarAtleta;
 using JiuJitsu.Application.Commands.ExcluirAtleta;
 using JiuJitsu.Application.DTOs;
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Application.Queries.ListarAtletas;
 using JiuJitsu.Application.Queries.ObterAtletaPorId;
+using JiuJitsu.Application.Queries.ObterHistoricoAtleta;
 using JiuJitsu.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -105,6 +108,59 @@ public class AtletasController : ControllerBase
         }
     }
 
+    /// <summary>Retorna o histórico de graduações de um atleta</summary>
+    [HttpGet("{id:guid}/historico")]
+    [ProducesResponseType(typeof(HistoricoAtletaDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ObterHistorico(Guid id, CancellationToken cancellationToken)
+    {
+        var resultado = await _mediator.Send(new ObterHistoricoAtletaQuery(id), cancellationToken);
+        return resultado is null ? NotFound() : Ok(resultado);
+    }
+
+    /// <summary>Adiciona um registro manual de histórico de graduação (atletas vindos de outra escola)</summary>
+    [HttpPost("{id:guid}/historico")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AdicionarHistoricoManual(
+        Guid id,
+        [FromBody] AdicionarHistoricoManualRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _mediator.Send(
+                new AdicionarHistoricoManualCommand(id, request.Faixa, request.Grau, request.DataInicio, request.DataFim),
+                cancellationToken);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
+    /// <summary>Atualiza a foto do atleta (base64)</summary>
+    [HttpPut("{id:guid}/foto")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AtualizarFoto(
+        Guid id,
+        [FromBody] AtualizarFotoRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _mediator.Send(new AtualizarFotoAtletaCommand(id, request.FotoBase64), cancellationToken);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
     /// <summary>Enfileira a exclusão (soft delete) de um atleta</summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -143,3 +199,12 @@ public record AtualizarAtletaRequest(
     DateOnly DataUltimaGraduacao,
     string   Email
 );
+
+public record AdicionarHistoricoManualRequest(
+    Faixa     Faixa,
+    Grau      Grau,
+    DateOnly  DataInicio,
+    DateOnly? DataFim
+);
+
+public record AtualizarFotoRequest(string? FotoBase64);

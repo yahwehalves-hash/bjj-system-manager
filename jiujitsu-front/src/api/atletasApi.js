@@ -33,4 +33,16 @@ export const atletasApi = {
   // Exclusão (soft delete) — retorna 202 Accepted
   excluir: (id) =>
     api.delete(`/api/atletas/${id}`).then((r) => r.data),
+
+  // Histórico de graduações
+  obterHistorico: (id) =>
+    api.get(`/api/atletas/${id}/historico`).then((r) => r.data),
+
+  // Adicionar histórico manual (atletas vindos de outra escola)
+  adicionarHistoricoManual: (id, dados) =>
+    api.post(`/api/atletas/${id}/historico`, dados).then((r) => r.data),
+
+  // Atualizar foto do atleta (base64)
+  atualizarFoto: (id, fotoBase64) =>
+    api.put(`/api/atletas/${id}/foto`, { fotoBase64 }).then((r) => r.data),
 };

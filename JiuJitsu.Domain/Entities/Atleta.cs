@@ -15,13 +15,16 @@ public class Atleta
     public DateOnly  DataUltimaGraduacao { get; private set; }
     public Email     Email               { get; private set; }
 
+    public string?   FotoBase64   { get; private set; }
+
     // Soft delete — atletas excluídos são marcados como inativos
     public bool      Ativo        { get; private set; }
     public DateTime  CriadoEm    { get; private set; }
     public DateTime? AtualizadoEm { get; private set; }
 
-    // Navigation property — preenchida pelo EF Core
+    // Navigation properties — preenchidas pelo EF Core
     public Filial Filial { get; private set; } = null!;
+    public ICollection<HistoricoGraduacao> Historico { get; private set; } = [];
 
     // Construtor privado reservado ao EF Core — null! suprime aviso de nullable
     // pois o EF Core preenche as propriedades via reflection após instanciar
@@ -75,6 +78,8 @@ public class Atleta
 
         Validar();
     }
+
+    public void AtualizarFoto(string? fotoBase64) => FotoBase64 = fotoBase64;
 
     // Marca o atleta como inativo (soft delete)
     public void Desativar() => Ativo = false;

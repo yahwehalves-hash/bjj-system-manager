@@ -19,6 +19,7 @@ public static class InfrastructureExtensions
 
         // Repositórios — escrita (EF Core)
         services.AddScoped<IAtletaRepository, AtletaRepository>();
+        services.AddScoped<IHistoricoGraduacaoRepository, HistoricoGraduacaoRepository>();
         services.AddScoped<IFilialRepository, FilialRepository>();
         services.AddScoped<IConfiguracaoRepository, ConfiguracaoRepository>();
         services.AddScoped<IMensalidadeRepository, MensalidadeRepository>();
@@ -26,6 +27,7 @@ public static class InfrastructureExtensions
 
         // Repositórios — leitura (Dapper)
         services.AddScoped<IAtletaReadRepository, AtletaReadRepository>();
+        services.AddScoped<IHistoricoGraduacaoReadRepository, HistoricoGraduacaoReadRepository>();
         services.AddScoped<IFilialReadRepository, FilialReadRepository>();
         services.AddScoped<IConfiguracaoReadRepository, ConfiguracaoReadRepository>();
         services.AddScoped<IMensalidadeReadRepository, MensalidadeReadRepository>();
