@@ -25,14 +25,14 @@ public class DashboardReadRepository : IDashboardReadRepository
             SELECT
                 f.id        AS FilialId,
                 f.nome      AS NomeFilial,
-                -- Indicadores de atletas
-                COUNT(DISTINCT a.id) FILTER (WHERE a.ativo = true)                           AS TotalAtletasAtivos,
-                COUNT(DISTINCT m_inad.atleta_id)                                              AS TotalInadimplentes,
+                -- Indicadores de atletas — cast para int pois COUNT retorna bigint
+                CAST(COUNT(DISTINCT a.id)        FILTER (WHERE a.ativo = true)   AS int) AS TotalAtletasAtivos,
+                CAST(COUNT(DISTINCT m_inad.atleta_id)                            AS int) AS TotalInadimplentes,
                 -- Mensalidades do mês
-                COALESCE(SUM(m.valor)     FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia), 0) AS ReceitaPrevista,
-                COALESCE(SUM(m.valor_pago) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Paga'), 0) AS ReceitaRealizada,
-                COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Pendente')               AS MensalidadesPendentes,
-                COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status IN ('Vencida','Inadimplente')) AS MensalidadesVencidas,
+                COALESCE(SUM(m.valor)      FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia), 0)                                   AS ReceitaPrevista,
+                COALESCE(SUM(m.valor_pago) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Paga'), 0)              AS ReceitaRealizada,
+                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Pendente')               AS int)  AS MensalidadesPendentes,
+                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status IN ('Vencida','Inadimplente')) AS int) AS MensalidadesVencidas,
                 -- Despesas do mês
                 COALESCE(SUM(d.valor) FILTER (WHERE TO_CHAR(d.data_competencia, 'YYYY-MM') = @Competencia AND d.status != 'Cancelada'), 0) AS TotalDespesas
             FROM filiais f
@@ -56,12 +56,12 @@ public class DashboardReadRepository : IDashboardReadRepository
             SELECT
                 f.id        AS FilialId,
                 f.nome      AS NomeFilial,
-                COUNT(DISTINCT a.id) FILTER (WHERE a.ativo = true)                           AS TotalAtletasAtivos,
-                COUNT(DISTINCT m_inad.atleta_id)                                              AS TotalInadimplentes,
-                COALESCE(SUM(m.valor)     FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia), 0) AS ReceitaPrevista,
-                COALESCE(SUM(m.valor_pago) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Paga'), 0) AS ReceitaRealizada,
-                COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Pendente')               AS MensalidadesPendentes,
-                COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status IN ('Vencida','Inadimplente')) AS MensalidadesVencidas,
+                CAST(COUNT(DISTINCT a.id)        FILTER (WHERE a.ativo = true)   AS int) AS TotalAtletasAtivos,
+                CAST(COUNT(DISTINCT m_inad.atleta_id)                            AS int) AS TotalInadimplentes,
+                COALESCE(SUM(m.valor)      FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia), 0)                                    AS ReceitaPrevista,
+                COALESCE(SUM(m.valor_pago) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Paga'), 0)               AS ReceitaRealizada,
+                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Pendente')               AS int)   AS MensalidadesPendentes,
+                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status IN ('Vencida','Inadimplente')) AS int) AS MensalidadesVencidas,
                 COALESCE(SUM(d.valor) FILTER (WHERE TO_CHAR(d.data_competencia, 'YYYY-MM') = @Competencia AND d.status != 'Cancelada'), 0) AS TotalDespesas
             FROM filiais f
             LEFT JOIN atletas a ON a.filial_id = f.id

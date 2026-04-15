@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactApexChart from 'react-apexcharts';
 import { atletasApi } from '../api/atletasApi';
+import { DatePicker } from '../components/DatePicker';
 
 const COR_FAIXA = {
   Branca: '#e0e0e0',
@@ -337,21 +338,19 @@ export default function HistoricoPage() {
 
             <div className="form-grupo">
               <label>Data de início *</label>
-              <input
-                type="date"
-                className="form-input"
+              <DatePicker
                 value={formManual.dataInicio}
-                onChange={(e) => setFormManual((f) => ({ ...f, dataInicio: e.target.value }))}
+                onChange={(v) => setFormManual((f) => ({ ...f, dataInicio: v }))}
+                maxYear={new Date().getFullYear()}
               />
             </div>
 
             <div className="form-grupo">
               <label>Data de fim <span style={{ color: '#718096', fontSize: '0.8rem' }}>(deixe vazio se for a faixa atual)</span></label>
-              <input
-                type="date"
-                className="form-input"
+              <DatePicker
                 value={formManual.dataFim}
-                onChange={(e) => setFormManual((f) => ({ ...f, dataFim: e.target.value }))}
+                onChange={(v) => setFormManual((f) => ({ ...f, dataFim: v }))}
+                maxYear={new Date().getFullYear()}
               />
             </div>
 

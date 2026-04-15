@@ -452,3 +452,34 @@ main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
 .metric-danger  .metric-value { color: #c53030; }
 .metric-warning .metric-value { color: #b7791f; }
 .metric-info    .metric-value { color: #2b6cb0; }
+
+/* ===== Calendar Popup ===== */
+.calendario-popup {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 8px;
+}
+/* Estilos do react-day-picker */
+.rdp {
+  --rdp-accent-color: #1565c0;
+  --rdp-background-color: #ebf8ff;
+  margin: 0;
+}
+.rdp-day_selected:not(.rdp-day_range_middle) {
+  background-color: var(--rdp-accent-color) !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+}
+.rdp-day_range_middle {
+  background-color: var(--rdp-background-color) !important;
+  color: #1a202c !important;
+  border-radius: 0 !important;
+}
+.rdp-day_range_start { border-radius: 50% 0 0 50% !important; }
+.rdp-day_range_end   { border-radius: 0 50% 50% 0 !important; }
+.rdp-caption_label   { font-weight: 700; font-size: 0.95rem; }
+.rdp-head_cell       { font-size: 0.8rem; color: #718096; }
+.rdp-day            { border-radius: 50%; font-size: 0.875rem; }
+.rdp-day:hover:not(.rdp-day_selected) { background: #e2e8f0 !important; }
