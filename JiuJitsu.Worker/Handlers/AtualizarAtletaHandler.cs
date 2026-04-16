@@ -48,7 +48,8 @@ public class AtualizarAtletaHandler
             faixa:               novaFaixa,
             grau:                novoGrau,
             dataUltimaGraduacao: payload.DataUltimaGraduacao,
-            email:               new Email(payload.Email));
+            email:               new Email(payload.Email),
+            telefone:            payload.Telefone);
 
         if (graduacaoMudou)
         {

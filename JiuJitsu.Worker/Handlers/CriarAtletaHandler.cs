@@ -39,7 +39,8 @@ public class CriarAtletaHandler
             faixa:               Enum.Parse<Faixa>(payload.Faixa),
             grau:                (Grau)payload.Grau,
             dataUltimaGraduacao: payload.DataUltimaGraduacao,
-            email:               new Email(payload.Email));
+            email:               new Email(payload.Email),
+            telefone:            payload.Telefone);
 
         await _repositorio.AdicionarAsync(atleta, cancellationToken);
 

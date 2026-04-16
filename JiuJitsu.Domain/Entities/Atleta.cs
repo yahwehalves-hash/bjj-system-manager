@@ -14,6 +14,7 @@ public class Atleta
     public Grau      Grau                { get; private set; }
     public DateOnly  DataUltimaGraduacao { get; private set; }
     public Email     Email               { get; private set; }
+    public string?   Telefone            { get; private set; }
 
     public string?   FotoBase64   { get; private set; }
 
@@ -43,7 +44,8 @@ public class Atleta
         Faixa    faixa,
         Grau     grau,
         DateOnly dataUltimaGraduacao,
-        Email    email)
+        Email    email,
+        string?  telefone = null)
     {
         Id                  = Guid.CreateVersion7();
         FilialId            = filialId;
@@ -54,6 +56,7 @@ public class Atleta
         Grau                = grau;
         DataUltimaGraduacao = dataUltimaGraduacao;
         Email               = email;
+        Telefone            = string.IsNullOrWhiteSpace(telefone) ? null : telefone.Trim();
         Ativo               = true;
         CriadoEm            = DateTime.UtcNow;
 
@@ -66,7 +69,8 @@ public class Atleta
         Faixa    faixa,
         Grau     grau,
         DateOnly dataUltimaGraduacao,
-        Email    email)
+        Email    email,
+        string?  telefone = null)
     {
         NomeCompleto        = nomeCompleto;
         DataNascimento      = dataNascimento;
@@ -74,6 +78,7 @@ public class Atleta
         Grau                = grau;
         DataUltimaGraduacao = dataUltimaGraduacao;
         Email               = email;
+        Telefone            = string.IsNullOrWhiteSpace(telefone) ? null : telefone.Trim();
         AtualizadoEm        = DateTime.UtcNow;
 
         Validar();

@@ -19,7 +19,12 @@ export function LoginPage({ onLogin }) {
       if (modo === 'login') {
         const dados = await authApi.login(form.email, form.senha);
         localStorage.setItem('token', dados.token);
-        onLogin({ nome: dados.nome, email: dados.email, role: dados.role, deveAlterarSenha: dados.deveAlterarSenha });
+        let filialId = null;
+        try {
+          const payload = JSON.parse(atob(dados.token.split('.')[1]));
+          filialId = payload.filialId ?? null;
+        } catch { /* ignora */ }
+        onLogin({ nome: dados.nome, email: dados.email, role: dados.role, filialId, deveAlterarSenha: dados.deveAlterarSenha });
       } else {
         await authApi.registrar(form.nome, form.email, form.senha);
         setModo('login');

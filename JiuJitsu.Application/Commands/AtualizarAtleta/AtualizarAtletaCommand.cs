@@ -10,5 +10,6 @@ public record AtualizarAtletaCommand(
     Faixa    Faixa,
     Grau     Grau,
     DateOnly DataUltimaGraduacao,
-    string   Email
+    string   Email,
+    string?  Telefone = null
 ) : IRequest;

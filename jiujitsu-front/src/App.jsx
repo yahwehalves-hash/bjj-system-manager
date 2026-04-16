@@ -10,7 +10,12 @@ import MensalidadesPage from './pages/MensalidadesPage';
 import DespesasPage from './pages/DespesasPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import UsuariosPage from './pages/UsuariosPage';
-import HistoricoPage from './pages/HistoricoPage';
+import HistoricoPage from './pages/HistoricoPage'
+import TurmasPage from './pages/TurmasPage'
+import GraduacaoPage from './pages/GraduacaoPage'
+import NotificacoesPage from './pages/NotificacoesPage';
+import { ContratosPage } from './pages/ContratosPage';
+import PlanosPage from './pages/PlanosPage';
 
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
@@ -20,10 +25,11 @@ export default function App() {
       const payload = JSON.parse(atob(token.split('.')[1]));
       if (payload.exp * 1000 < Date.now()) { localStorage.removeItem('token'); return null; }
       return {
-        nome:  payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
-        email: payload.email,
-        role:  payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
-        deveAlterarSenha: false, // token existente = sessão já validada anteriormente
+        nome:     payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+        email:    payload.email,
+        role:     payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+        filialId: payload.filialId ?? null,
+        deveAlterarSenha: false,
       };
     } catch { localStorage.removeItem('token'); return null; }
   });
@@ -60,15 +66,24 @@ export default function App() {
         <div className="navbar-links">
           <NavLink to="/dashboard"    className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Dashboard</NavLink>
           <NavLink to="/atletas"      className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Atletas</NavLink>
+          <NavLink to="/turmas"     className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Turmas</NavLink>
+          <NavLink to="/graduacao"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Graduação</NavLink>
           <NavLink to="/mensalidades" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Mensalidades</NavLink>
           {(isAdmin || usuario.role === 'GestorFilial') && (
             <NavLink to="/despesas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Despesas</NavLink>
+          )}
+          {(isAdmin || usuario.role === 'GestorFilial') && (
+            <>
+              <NavLink to="/planos"   className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Planos</NavLink>
+              <NavLink to="/contratos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Contratos</NavLink>
+            </>
           )}
           {isAdmin && (
             <>
               <NavLink to="/filiais"       className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Filiais</NavLink>
               <NavLink to="/usuarios"      className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Usuários</NavLink>
-              <NavLink to="/configuracoes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Configurações</NavLink>
+              <NavLink to="/configuracoes"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Configurações</NavLink>
+              <NavLink to="/notificacoes"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Notificações</NavLink>
             </>
           )}
         </div>
@@ -85,11 +100,16 @@ export default function App() {
           <Route path="/atletas/novo"           element={<FormPage usuario={usuario} />} />
           <Route path="/atletas/:id/editar"     element={<FormPage usuario={usuario} />} />
           <Route path="/atletas/:id/historico"  element={<HistoricoPage />} />
+          <Route path="/turmas"                 element={<TurmasPage usuario={usuario} />} />
+          <Route path="/graduacao"              element={<GraduacaoPage usuario={usuario} />} />
           <Route path="/mensalidades"           element={<MensalidadesPage usuario={usuario} />} />
           <Route path="/despesas"               element={<DespesasPage usuario={usuario} />} />
           <Route path="/filiais"                element={isAdmin ? <FiliaisPage /> : <Navigate to="/dashboard" replace />} />
           <Route path="/usuarios"               element={isAdmin ? <UsuariosPage /> : <Navigate to="/dashboard" replace />} />
           <Route path="/configuracoes"          element={isAdmin ? <ConfiguracoesPage usuario={usuario} /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/notificacoes"           element={isAdmin ? <NotificacoesPage /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/planos"                 element={(isAdmin || usuario.role === 'GestorFilial') ? <PlanosPage /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/contratos"              element={(isAdmin || usuario.role === 'GestorFilial') ? <ContratosPage /> : <Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
     </BrowserRouter>

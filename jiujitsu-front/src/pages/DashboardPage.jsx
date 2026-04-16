@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { dashboardApi } from '../api/dashboardApi'
+import { relatoriosApi } from '../api/relatoriosApi'
 
 const competenciaAtual = () => new Date().toISOString().slice(0, 7)
 
@@ -74,16 +75,37 @@ export default function DashboardPage({ usuario }) {
     </div>
   )
 
+  async function exportar(tipo) {
+    try {
+      if (tipo === 'inadimplencia') await relatoriosApi.inadimplencia({ competencia })
+      if (tipo === 'dre')           await relatoriosApi.dre({ competencia })
+      if (tipo === 'faixas')        await relatoriosApi.atletasPorFaixa({})
+    } catch {
+      setErro('Erro ao gerar relatório.')
+    }
+  }
+
   return (
     <div className="page-container">
       <div className="page-header">
         <h2>Dashboard Financeiro</h2>
-        <input
-          type="month"
-          value={competencia}
-          onChange={e => setCompetencia(e.target.value)}
-          className="input"
-        />
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="month"
+            value={competencia}
+            onChange={e => setCompetencia(e.target.value)}
+            className="input"
+          />
+          <button className="btn btn-secondary" onClick={() => exportar('dre')} title="Exportar DRE">
+            ↓ DRE
+          </button>
+          <button className="btn btn-secondary" onClick={() => exportar('inadimplencia')} title="Exportar Inadimplência">
+            ↓ Inadimplência
+          </button>
+          <button className="btn btn-secondary" onClick={() => exportar('faixas')} title="Exportar Atletas por Faixa">
+            ↓ Atletas/Faixa
+          </button>
+        </div>
       </div>
 
       {erro && <div className="alert alert-error">{erro}</div>}

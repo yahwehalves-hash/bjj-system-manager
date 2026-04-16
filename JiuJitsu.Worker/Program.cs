@@ -36,9 +36,14 @@ builder.Services.AddScoped<ExcluirAtletaHandler>();
 builder.Services.AddScoped<GerarMensalidadesHandler>();
 builder.Services.AddScoped<AtualizarStatusMensalidadesHandler>();
 
+// Handlers do Worker — notificações
+builder.Services.AddScoped<DispararAniversariosHandler>();
+
 // Consumers e Jobs como HostedService (BackgroundService)
 builder.Services.AddHostedService<AtletaConsumer>();
 builder.Services.AddHostedService<FinanceiroJob>();
+builder.Services.AddHostedService<AniversarioJob>();
+builder.Services.AddHostedService<NotificacaoConsumer>();
 
 var host = builder.Build();
 

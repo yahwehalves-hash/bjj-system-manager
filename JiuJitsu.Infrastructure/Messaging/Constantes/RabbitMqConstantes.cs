@@ -21,4 +21,12 @@ public static class RabbitMqConstantes
     public const string RoutingMensalidadePaga         = "mensalidade.paga";
     public const string RoutingMensalidadeVencida      = "mensalidade.vencida";
     public const string RoutingMensalidadeInadimplente = "mensalidade.inadimplente";
+
+    // ── Notificações ─────────────────────────────────────────────────────────
+    public const string NotificacaoExchange         = "notificacoes.exchange";
+    public const string NotificacaoFila             = "notificacoes.queue";
+    public const string NotificacaoExchangeDlx      = "notificacoes.dlx";
+    public const string NotificacaoFilaDlq          = "notificacoes.dlq";
+    public const string RoutingNotificacaoCobranca  = "notificacao.cobranca";
+    public const string RoutingNotificacaoAniversario = "notificacao.aniversario";
 }

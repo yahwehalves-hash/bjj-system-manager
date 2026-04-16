@@ -13,6 +13,15 @@ public class AppDbContext : DbContext
     public DbSet<Mensalidade>          Mensalidades         => Set<Mensalidade>();
     public DbSet<Despesa>              Despesas             => Set<Despesa>();
     public DbSet<HistoricoGraduacao>   HistoricoGraduacoes  => Set<HistoricoGraduacao>();
+    public DbSet<Turma>                Turmas               => Set<Turma>();
+    public DbSet<AtletaTurma>          AtletasTurmas        => Set<AtletaTurma>();
+    public DbSet<RegraGraduacao>       RegrasGraduacao      => Set<RegraGraduacao>();
+    public DbSet<TemplateNotificacao>  TemplatesNotificacao => Set<TemplateNotificacao>();
+    public DbSet<HistoricoNotificacao> HistoricoNotificacoes => Set<HistoricoNotificacao>();
+    public DbSet<TemplateContrato>     TemplatesContrato    => Set<TemplateContrato>();
+    public DbSet<Contrato>             Contratos            => Set<Contrato>();
+    public DbSet<Plano>                Planos               => Set<Plano>();
+    public DbSet<Matricula>            Matriculas           => Set<Matricula>();
 
     public AppDbContext(DbContextOptions<AppDbContext> opcoes) : base(opcoes) { }
 

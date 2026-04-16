@@ -72,7 +72,8 @@ public class AtletasController : ControllerBase
             request.Faixa,
             request.Grau,
             request.DataUltimaGraduacao,
-            request.Email);
+            request.Email,
+            request.Telefone);
 
         var id = await _mediator.Send(command, cancellationToken);
 
@@ -97,7 +98,8 @@ public class AtletasController : ControllerBase
                 request.Faixa,
                 request.Grau,
                 request.DataUltimaGraduacao,
-                request.Email);
+                request.Email,
+                request.Telefone);
 
             await _mediator.Send(command, cancellationToken);
             return Accepted(new { mensagem = "Atualização em processamento." });
@@ -188,7 +190,8 @@ public record CriarAtletaRequest(
     Faixa    Faixa,
     Grau     Grau,
     DateOnly DataUltimaGraduacao,
-    string   Email
+    string   Email,
+    string?  Telefone = null
 );
 
 public record AtualizarAtletaRequest(
@@ -197,7 +200,8 @@ public record AtualizarAtletaRequest(
     Faixa    Faixa,
     Grau     Grau,
     DateOnly DataUltimaGraduacao,
-    string   Email
+    string   Email,
+    string?  Telefone = null
 );
 
 public record AdicionarHistoricoManualRequest(

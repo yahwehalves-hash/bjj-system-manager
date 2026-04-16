@@ -12,5 +12,6 @@ public record CriarAtletaCommand(
     Faixa    Faixa,
     Grau     Grau,
     DateOnly DataUltimaGraduacao,
-    string   Email
+    string   Email,
+    string?  Telefone = null
 ) : IRequest<Guid>;
