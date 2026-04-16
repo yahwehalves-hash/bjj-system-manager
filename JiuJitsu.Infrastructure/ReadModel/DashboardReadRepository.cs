@@ -22,26 +22,54 @@ public class DashboardReadRepository : IDashboardReadRepository
         CancellationToken cancellationToken = default)
     {
         const string sql = """
+            WITH atletas_agg AS (
+                SELECT filial_id,
+                    CAST(COUNT(*) AS int) AS total_ativos
+                FROM atletas
+                WHERE ativo = true
+                GROUP BY filial_id
+            ),
+            inadimplentes_agg AS (
+                SELECT filial_id,
+                    CAST(COUNT(DISTINCT atleta_id) AS int) AS total_inadimplentes
+                FROM mensalidades
+                WHERE status = 'Inadimplente'
+                GROUP BY filial_id
+            ),
+            mensalidades_agg AS (
+                SELECT filial_id,
+                    COALESCE(SUM(valor), 0)                                          AS receita_prevista,
+                    COALESCE(SUM(valor_pago) FILTER (WHERE status = 'Paga'), 0)      AS receita_realizada,
+                    CAST(COUNT(*) FILTER (WHERE status = 'Pendente')               AS int) AS mensalidades_pendentes,
+                    CAST(COUNT(*) FILTER (WHERE status IN ('Vencida','Inadimplente')) AS int) AS mensalidades_vencidas
+                FROM mensalidades
+                WHERE TO_CHAR(competencia, 'YYYY-MM') = @Competencia
+                GROUP BY filial_id
+            ),
+            despesas_agg AS (
+                SELECT filial_id,
+                    COALESCE(SUM(valor), 0) AS total_despesas
+                FROM despesas
+                WHERE TO_CHAR(data_competencia, 'YYYY-MM') = @Competencia
+                  AND status != 'Cancelada'
+                GROUP BY filial_id
+            )
             SELECT
-                f.id        AS FilialId,
-                f.nome      AS NomeFilial,
-                -- Indicadores de atletas — cast para int pois COUNT retorna bigint
-                CAST(COUNT(DISTINCT a.id)        FILTER (WHERE a.ativo = true)   AS int) AS TotalAtletasAtivos,
-                CAST(COUNT(DISTINCT m_inad.atleta_id)                            AS int) AS TotalInadimplentes,
-                -- Mensalidades do mês
-                COALESCE(SUM(m.valor)      FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia), 0)                                   AS ReceitaPrevista,
-                COALESCE(SUM(m.valor_pago) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Paga'), 0)              AS ReceitaRealizada,
-                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Pendente')               AS int)  AS MensalidadesPendentes,
-                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status IN ('Vencida','Inadimplente')) AS int) AS MensalidadesVencidas,
-                -- Despesas do mês
-                COALESCE(SUM(d.valor) FILTER (WHERE TO_CHAR(d.data_competencia, 'YYYY-MM') = @Competencia AND d.status != 'Cancelada'), 0) AS TotalDespesas
+                f.id   AS FilialId,
+                f.nome AS NomeFilial,
+                COALESCE(aa.total_ativos,           0) AS TotalAtletasAtivos,
+                COALESCE(ia.total_inadimplentes,    0) AS TotalInadimplentes,
+                COALESCE(ma.receita_prevista,        0) AS ReceitaPrevista,
+                COALESCE(ma.receita_realizada,       0) AS ReceitaRealizada,
+                COALESCE(ma.mensalidades_pendentes,  0) AS MensalidadesPendentes,
+                COALESCE(ma.mensalidades_vencidas,   0) AS MensalidadesVencidas,
+                COALESCE(da.total_despesas,          0) AS TotalDespesas
             FROM filiais f
-            LEFT JOIN atletas a ON a.filial_id = f.id
-            LEFT JOIN mensalidades m ON m.filial_id = f.id
-            LEFT JOIN mensalidades m_inad ON m_inad.filial_id = f.id AND m_inad.status = 'Inadimplente'
-            LEFT JOIN despesas d ON d.filial_id = f.id
+            LEFT JOIN atletas_agg      aa ON aa.filial_id = f.id
+            LEFT JOIN inadimplentes_agg ia ON ia.filial_id = f.id
+            LEFT JOIN mensalidades_agg  ma ON ma.filial_id = f.id
+            LEFT JOIN despesas_agg      da ON da.filial_id = f.id
             WHERE f.id = @FilialId
-            GROUP BY f.id, f.nome
             """;
 
         await using var conexao = new NpgsqlConnection(_connectionString);
@@ -53,23 +81,54 @@ public class DashboardReadRepository : IDashboardReadRepository
         CancellationToken cancellationToken = default)
     {
         const string sql = """
+            WITH atletas_agg AS (
+                SELECT filial_id,
+                    CAST(COUNT(*) AS int) AS total_ativos
+                FROM atletas
+                WHERE ativo = true
+                GROUP BY filial_id
+            ),
+            inadimplentes_agg AS (
+                SELECT filial_id,
+                    CAST(COUNT(DISTINCT atleta_id) AS int) AS total_inadimplentes
+                FROM mensalidades
+                WHERE status = 'Inadimplente'
+                GROUP BY filial_id
+            ),
+            mensalidades_agg AS (
+                SELECT filial_id,
+                    COALESCE(SUM(valor), 0)                                               AS receita_prevista,
+                    COALESCE(SUM(valor_pago) FILTER (WHERE status = 'Paga'), 0)           AS receita_realizada,
+                    CAST(COUNT(*) FILTER (WHERE status = 'Pendente')                AS int) AS mensalidades_pendentes,
+                    CAST(COUNT(*) FILTER (WHERE status IN ('Vencida','Inadimplente')) AS int) AS mensalidades_vencidas
+                FROM mensalidades
+                WHERE TO_CHAR(competencia, 'YYYY-MM') = @Competencia
+                GROUP BY filial_id
+            ),
+            despesas_agg AS (
+                SELECT filial_id,
+                    COALESCE(SUM(valor), 0) AS total_despesas
+                FROM despesas
+                WHERE TO_CHAR(data_competencia, 'YYYY-MM') = @Competencia
+                  AND status != 'Cancelada'
+                GROUP BY filial_id
+            )
             SELECT
-                f.id        AS FilialId,
-                f.nome      AS NomeFilial,
-                CAST(COUNT(DISTINCT a.id)        FILTER (WHERE a.ativo = true)   AS int) AS TotalAtletasAtivos,
-                CAST(COUNT(DISTINCT m_inad.atleta_id)                            AS int) AS TotalInadimplentes,
-                COALESCE(SUM(m.valor)      FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia), 0)                                    AS ReceitaPrevista,
-                COALESCE(SUM(m.valor_pago) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Paga'), 0)               AS ReceitaRealizada,
-                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status = 'Pendente')               AS int)   AS MensalidadesPendentes,
-                CAST(COUNT(m.id) FILTER (WHERE TO_CHAR(m.competencia, 'YYYY-MM') = @Competencia AND m.status IN ('Vencida','Inadimplente')) AS int) AS MensalidadesVencidas,
-                COALESCE(SUM(d.valor) FILTER (WHERE TO_CHAR(d.data_competencia, 'YYYY-MM') = @Competencia AND d.status != 'Cancelada'), 0) AS TotalDespesas
+                f.id   AS FilialId,
+                f.nome AS NomeFilial,
+                COALESCE(aa.total_ativos,           0) AS TotalAtletasAtivos,
+                COALESCE(ia.total_inadimplentes,    0) AS TotalInadimplentes,
+                COALESCE(ma.receita_prevista,        0) AS ReceitaPrevista,
+                COALESCE(ma.receita_realizada,       0) AS ReceitaRealizada,
+                COALESCE(ma.mensalidades_pendentes,  0) AS MensalidadesPendentes,
+                COALESCE(ma.mensalidades_vencidas,   0) AS MensalidadesVencidas,
+                COALESCE(da.total_despesas,          0) AS TotalDespesas
             FROM filiais f
-            LEFT JOIN atletas a ON a.filial_id = f.id
-            LEFT JOIN mensalidades m ON m.filial_id = f.id
-            LEFT JOIN mensalidades m_inad ON m_inad.filial_id = f.id AND m_inad.status = 'Inadimplente'
-            LEFT JOIN despesas d ON d.filial_id = f.id
+            LEFT JOIN atletas_agg       aa ON aa.filial_id = f.id
+            LEFT JOIN inadimplentes_agg ia ON ia.filial_id = f.id
+            LEFT JOIN mensalidades_agg  ma ON ma.filial_id = f.id
+            LEFT JOIN despesas_agg      da ON da.filial_id = f.id
             WHERE f.ativo = true
-            GROUP BY f.id, f.nome
             ORDER BY f.nome
             """;
 

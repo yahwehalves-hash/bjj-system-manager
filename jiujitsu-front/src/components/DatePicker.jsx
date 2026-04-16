@@ -20,7 +20,7 @@ function dateToStr(d) {
   return d ? format(d, 'yyyy-MM-dd') : ''
 }
 
-function CalendarioPortal({ anchorRef, children }) {
+function CalendarioPortal({ anchorRef, containerRef, children }) {
   const [style, setStyle] = useState({})
 
   useEffect(() => {
@@ -47,7 +47,7 @@ function CalendarioPortal({ anchorRef, children }) {
   }, [anchorRef])
 
   return createPortal(
-    <div className="calendario-popup" style={style}>{children}</div>,
+    <div ref={containerRef} className="calendario-popup" style={style}>{children}</div>,
     document.body
   )
 }
@@ -61,12 +61,16 @@ export function DatePicker({ value, onChange, required, minYear, maxYear }) {
   const [aberto, setAberto]   = useState(false)
   const [mes, setMes]         = useState(strToDate(value) ?? new Date())
   const ref                   = useRef(null)
+  const popupRef              = useRef(null)
 
   const selecionado = strToDate(value)
 
   useEffect(() => {
     function handler(e) {
-      if (ref.current && !ref.current.contains(e.target)) setAberto(false)
+      if (
+        ref.current && !ref.current.contains(e.target) &&
+        popupRef.current && !popupRef.current.contains(e.target)
+      ) setAberto(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -94,7 +98,7 @@ export function DatePicker({ value, onChange, required, minYear, maxYear }) {
         style={{ cursor: 'pointer', caretColor: 'transparent' }}
       />
       {aberto && (
-        <CalendarioPortal anchorRef={ref}>
+        <CalendarioPortal anchorRef={ref} containerRef={popupRef}>
           <DayPicker
             mode="single"
             selected={selecionado}
@@ -119,7 +123,8 @@ export function DateRangePicker({ from, to, onChangefrom, onChangeTo, placeholde
     from: strToDate(from),
     to:   strToDate(to),
   })
-  const ref = useRef(null)
+  const ref      = useRef(null)
+  const popupRef = useRef(null)
 
   useEffect(() => {
     setRange({ from: strToDate(from), to: strToDate(to) })
@@ -127,7 +132,10 @@ export function DateRangePicker({ from, to, onChangefrom, onChangeTo, placeholde
 
   useEffect(() => {
     function handler(e) {
-      if (ref.current && !ref.current.contains(e.target)) setAberto(false)
+      if (
+        ref.current && !ref.current.contains(e.target) &&
+        popupRef.current && !popupRef.current.contains(e.target)
+      ) setAberto(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -157,7 +165,7 @@ export function DateRangePicker({ from, to, onChangefrom, onChangeTo, placeholde
         style={{ cursor: 'pointer', caretColor: 'transparent' }}
       />
       {aberto && (
-        <CalendarioPortal anchorRef={ref}>
+        <CalendarioPortal anchorRef={ref} containerRef={popupRef}>
           <div style={{ minWidth: 560 }}>
             <DayPicker
               mode="range"
