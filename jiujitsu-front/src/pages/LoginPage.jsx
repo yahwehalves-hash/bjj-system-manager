@@ -51,7 +51,7 @@ export function LoginPage({ onLogin }) {
         </div>
 
         <h1 className="login-titulo">TRINITY</h1>
-        <p className="login-subtitulo">JIU-JITSU</p>
+        <p className="login-subtitulo">SOFTWARE</p>
         <p className="login-descricao">Sistema de Gestão</p>
 
         {erro && <div className="login-erro">{erro}</div>}

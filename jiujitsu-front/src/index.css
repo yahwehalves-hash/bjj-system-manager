@@ -159,39 +159,145 @@ body {
   margin-top: 24px;
 }
 
-/* ── Navbar ─────────────────────────────────── */
-.navbar {
+/* ── App layout ─────────────────────────────── */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* ── Sidebar ─────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
   background: #111;
-  border-bottom: 2px solid #cc0000;
-  color: #fff;
-  padding: 0 24px;
-  height: 56px;
+  border-right: 1px solid #1f1f1f;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s, min-width 0.2s;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+.sidebar.collapsed {
+  width: 56px;
+  min-width: 56px;
+}
+
+.sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px 12px 12px;
+  border-bottom: 1px solid #1f1f1f;
+  min-height: 56px;
+  gap: 8px;
 }
-.navbar-titulo { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
-.navbar-trinity { color: #cc0000; }
+.sidebar-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar-trinity { color: #cc0000; }
 
-.navbar-usuario {
+.sidebar-toggle {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #666;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 0.9rem;
-  color: #aaa;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+.sidebar-toggle:hover { border-color: #444; color: #fff; }
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.btn-sair {
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #888;
+  text-decoration: none;
+  font-size: 0.875rem;
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar-link:hover { background: #1a1a1a; color: #fff; }
+.sidebar-link.active { background: #cc0000; color: #fff; }
+.sidebar.collapsed .sidebar-link { justify-content: center; padding: 8px; }
+
+.sidebar-group-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 12px 10px 4px;
+  white-space: nowrap;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: #1f1f1f;
+  margin: 8px 4px;
+}
+
+.sidebar-footer {
+  border-top: 1px solid #1f1f1f;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sidebar-usuario-nome {
+  font-size: 0.8rem;
+  color: #666;
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: transparent;
-  border: 1px solid #444;
-  color: #aaa;
-  padding: 5px 12px;
+  border: 1px solid #2a2a2a;
+  color: #888;
+  padding: 7px 10px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
   transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
 }
-.btn-sair:hover { border-color: #cc0000; color: #fff; }
+.sidebar-logout:hover { border-color: #cc0000; color: #fff; }
+.sidebar.collapsed .sidebar-logout { justify-content: center; padding: 7px; }
 
 /* Página */
 main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
@@ -291,25 +397,6 @@ main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
 .campo input:disabled { background: #f7fafc; color: #718096; }
 .linha-dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .acoes-form { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
-
-/* ── Navbar links ───────────────────────────── */
-.navbar-links {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  margin: 0 24px;
-}
-.nav-link {
-  color: #aaa;
-  text-decoration: none;
-  font-size: 0.88rem;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
-}
-.nav-link:hover { background: #1f1f1f; color: #fff; }
-.nav-link.active { background: #cc0000; color: #fff; }
 
 /* ── Page layout ────────────────────────────── */
 .page-container { display: flex; flex-direction: column; gap: 16px; }

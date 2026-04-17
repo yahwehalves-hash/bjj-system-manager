@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { BrowserRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
 import { ListaPage } from './pages/ListaPage';
 import { FormPage } from './pages/FormPage';
 import { LoginPage } from './pages/LoginPage';
@@ -59,40 +60,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <nav className="navbar">
-        <span className="navbar-titulo">
-          <span className="navbar-trinity">TRINITY</span> JIU-JITSU
-        </span>
-        <div className="navbar-links">
-          <NavLink to="/dashboard"    className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Dashboard</NavLink>
-          <NavLink to="/atletas"      className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Atletas</NavLink>
-          <NavLink to="/turmas"     className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Turmas</NavLink>
-          <NavLink to="/graduacao"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Graduação</NavLink>
-          <NavLink to="/mensalidades" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Mensalidades</NavLink>
-          {(isAdmin || usuario.role === 'GestorFilial') && (
-            <NavLink to="/despesas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Despesas</NavLink>
-          )}
-          {(isAdmin || usuario.role === 'GestorFilial') && (
-            <>
-              <NavLink to="/planos"   className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Planos</NavLink>
-              <NavLink to="/contratos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Contratos</NavLink>
-            </>
-          )}
-          {isAdmin && (
-            <>
-              <NavLink to="/filiais"       className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Filiais</NavLink>
-              <NavLink to="/usuarios"      className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Usuários</NavLink>
-              <NavLink to="/configuracoes"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Configurações</NavLink>
-              <NavLink to="/notificacoes"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Notificações</NavLink>
-            </>
-          )}
-        </div>
-        <div className="navbar-usuario">
-          <span>{usuario.nome}</span>
-          <button className="btn-sair" onClick={handleLogout}>Sair</button>
-        </div>
-      </nav>
-      <main>
+      <div className="app-layout">
+        <Sidebar usuario={usuario} onLogout={handleLogout} />
+        <main className="app-main">
         <Routes>
           <Route path="/"                       element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard"              element={<DashboardPage usuario={usuario} />} />
@@ -111,7 +81,8 @@ export default function App() {
           <Route path="/planos"                 element={(isAdmin || usuario.role === 'GestorFilial') ? <PlanosPage /> : <Navigate to="/dashboard" replace />} />
           <Route path="/contratos"              element={(isAdmin || usuario.role === 'GestorFilial') ? <ContratosPage /> : <Navigate to="/dashboard" replace />} />
         </Routes>
-      </main>
+        </main>
+      </div>
     </BrowserRouter>
   );
 }
