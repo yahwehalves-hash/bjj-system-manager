@@ -82,6 +82,9 @@ public class AtletaConfiguration : IEntityTypeConfiguration<Atleta>
         builder.Property(a => a.AtualizadoEm)
             .HasColumnName("atualizado_em");
 
+        builder.Property(a => a.Telefone)
+            .HasColumnName("telefone");
+
         builder.Property(a => a.FotoBase64)
             .HasColumnName("foto_base64");
 

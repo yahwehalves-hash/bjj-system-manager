@@ -31,7 +31,7 @@ public class DispararAniversariosHandler
 
     public async Task ProcessarAsync(CancellationToken cancellationToken)
     {
-        var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
+        var hoje = DateOnly.FromDateTime(DateTime.Now); // Usa horário local (não UTC) para datas de aniversário
 
         var aniversariantes = await _db.Atletas
             .Include(a => a.Filial)

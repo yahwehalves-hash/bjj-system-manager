@@ -12,6 +12,7 @@ public record AtletaDetalheDto(
     int       Grau,
     DateOnly  DataUltimaGraduacao,
     string    Email,
+    string?   Telefone,
     string?   FotoBase64,
     bool      Ativo,
     DateTime  CriadoEm,

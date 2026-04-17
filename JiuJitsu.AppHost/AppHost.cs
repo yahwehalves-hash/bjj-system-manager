@@ -4,7 +4,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Banco de dados PostgreSQL
 var postgres = builder
     .AddPostgres("postgres")
-    .WithDataVolume();          // Persiste os dados entre restarts
+    .WithDataVolume();          // Persiste os dados entre restarts (porta dinâmica — veja no Aspire Dashboard)
 
 var bancoDados = postgres.AddDatabase("jiujitsu-db");
 
@@ -40,6 +40,9 @@ builder
     .WithReference(rabbitmq)
     .WithReference(bancoDados)
     .WaitFor(rabbitmq)
-    .WaitFor(bancoDados);
+    .WaitFor(bancoDados)
+    .WithEnvironment("EvolutionApi__BaseUrl",  "http://localhost:8080")
+    .WithEnvironment("EvolutionApi__ApiKey",   "jiujitsu-dev-key")
+    .WithEnvironment("EvolutionApi__Instance", "jiujitsu");
 
 builder.Build().Run();
