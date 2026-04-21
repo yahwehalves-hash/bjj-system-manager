@@ -1,3 +1,4 @@
+using Bogus;
 using FluentAssertions;
 using JiuJitsu.Application.DTOs;
 using JiuJitsu.Application.Interfaces;
@@ -10,6 +11,7 @@ public class ListarAtletasQueryHandlerTests
 {
     private readonly IAtletaReadRepository _readRepository = Substitute.For<IAtletaReadRepository>();
     private readonly ListarAtletasQueryHandler _handler;
+    private readonly Faker _faker = new("pt_BR");
 
     public ListarAtletasQueryHandlerTests()
     {
@@ -22,8 +24,17 @@ public class ListarAtletasQueryHandlerTests
         // Arrange
         var query = new ListarAtletasQuery(Nome: null, Faixa: null, Pagina: 1, TamanhoPagina: 10);
 
+        var itens = Enumerable.Range(1, 1).Select(_ => new AtletaResumoDto(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            _faker.Person.FullName,
+            "12345678901",
+            "Azul",
+            2,
+            true)).ToList();
+
         var resultadoEsperado = new ListaAtletasDto(
-            Itens: [new AtletaResumoDto(Guid.NewGuid(), Guid.NewGuid(), "Carlos Silva", "12345678901", "Azul", 2, true)],
+            Itens: itens,
             TotalItens: 1,
             Pagina: 1,
             TamanhoPagina: 10);
