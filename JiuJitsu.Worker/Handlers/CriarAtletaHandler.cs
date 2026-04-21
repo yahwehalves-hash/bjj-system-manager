@@ -40,7 +40,8 @@ public class CriarAtletaHandler
             grau:                (Grau)payload.Grau,
             dataUltimaGraduacao: payload.DataUltimaGraduacao,
             email:               new Email(payload.Email),
-            telefone:            payload.Telefone);
+            telefone:            payload.Telefone,
+            tipoAtleta:          Enum.TryParse<TipoAtleta>(payload.TipoAtleta, out var tipo) ? tipo : TipoAtleta.Aluno);
 
         await _repositorio.AdicionarAsync(atleta, cancellationToken);
 

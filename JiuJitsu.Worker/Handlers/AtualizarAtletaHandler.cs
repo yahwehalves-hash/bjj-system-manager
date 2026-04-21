@@ -49,7 +49,8 @@ public class AtualizarAtletaHandler
             grau:                novoGrau,
             dataUltimaGraduacao: payload.DataUltimaGraduacao,
             email:               new Email(payload.Email),
-            telefone:            payload.Telefone);
+            telefone:            payload.Telefone,
+            tipoAtleta:          Enum.TryParse<TipoAtleta>(payload.TipoAtleta, out var tipo) ? tipo : TipoAtleta.Aluno);
 
         if (graduacaoMudou)
         {

@@ -10,6 +10,7 @@ api.interceptors.request.use(config => {
 
 export const turmasApi = {
   listar:           (params) => api.get('/api/turmas', { params }),
+  listarPorAtleta:  (atletaId) => api.get('/api/turmas', { params: { atletaId } }).then(r => r.data),
   obterPorId:       (id)     => api.get(`/api/turmas/${id}`),
   criar:            (data)   => api.post('/api/turmas', data),
   atualizar:        (id, data) => api.put(`/api/turmas/${id}`, data),

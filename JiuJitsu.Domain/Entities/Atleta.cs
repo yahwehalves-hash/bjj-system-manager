@@ -15,6 +15,7 @@ public class Atleta
     public DateOnly  DataUltimaGraduacao { get; private set; }
     public Email     Email               { get; private set; }
     public string?   Telefone            { get; private set; }
+    public TipoAtleta TipoAtleta         { get; private set; }
 
     public string?   FotoBase64   { get; private set; }
 
@@ -37,15 +38,16 @@ public class Atleta
     }
 
     public Atleta(
-        Guid     filialId,
-        string   nomeCompleto,
-        Cpf      cpf,
-        DateOnly dataNascimento,
-        Faixa    faixa,
-        Grau     grau,
-        DateOnly dataUltimaGraduacao,
-        Email    email,
-        string?  telefone = null)
+        Guid       filialId,
+        string     nomeCompleto,
+        Cpf        cpf,
+        DateOnly   dataNascimento,
+        Faixa      faixa,
+        Grau       grau,
+        DateOnly   dataUltimaGraduacao,
+        Email      email,
+        string?    telefone   = null,
+        TipoAtleta tipoAtleta = TipoAtleta.Aluno)
     {
         Id                  = Guid.CreateVersion7();
         FilialId            = filialId;
@@ -57,6 +59,7 @@ public class Atleta
         DataUltimaGraduacao = dataUltimaGraduacao;
         Email               = email;
         Telefone            = string.IsNullOrWhiteSpace(telefone) ? null : telefone.Trim();
+        TipoAtleta          = tipoAtleta;
         Ativo               = true;
         CriadoEm            = DateTime.UtcNow;
 
@@ -64,13 +67,14 @@ public class Atleta
     }
 
     public void Atualizar(
-        string   nomeCompleto,
-        DateOnly dataNascimento,
-        Faixa    faixa,
-        Grau     grau,
-        DateOnly dataUltimaGraduacao,
-        Email    email,
-        string?  telefone = null)
+        string     nomeCompleto,
+        DateOnly   dataNascimento,
+        Faixa      faixa,
+        Grau       grau,
+        DateOnly   dataUltimaGraduacao,
+        Email      email,
+        string?    telefone   = null,
+        TipoAtleta tipoAtleta = TipoAtleta.Aluno)
     {
         NomeCompleto        = nomeCompleto;
         DataNascimento      = dataNascimento;
@@ -79,6 +83,7 @@ public class Atleta
         DataUltimaGraduacao = dataUltimaGraduacao;
         Email               = email;
         Telefone            = string.IsNullOrWhiteSpace(telefone) ? null : telefone.Trim();
+        TipoAtleta          = tipoAtleta;
         AtualizadoEm        = DateTime.UtcNow;
 
         Validar();

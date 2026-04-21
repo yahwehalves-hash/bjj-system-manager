@@ -16,5 +16,6 @@ export const mensalidadesApi = {
   cancelar:          (id, motivo) => api.delete(`/api/mensalidades/${id}`, { data: { motivo } }),
   gerar:             (competencia) => api.post('/api/mensalidades/gerar', { competencia }),
   atualizarStatus:   ()           => api.post('/api/mensalidades/atualizar-status'),
+  sincronizarGateway: ()          => api.post('/api/mensalidades/sincronizar-gateway'),
   cobrancaOnline:    (id)         => api.post(`/api/mensalidades/${id}/cobranca-online`),
 }

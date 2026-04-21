@@ -9,6 +9,7 @@ using JiuJitsu.Application.Mensalidades.Commands.RegistrarPagamento;
 using JiuJitsu.Application.Mensalidades.Queries.ListarMensalidades;
 using JiuJitsu.Application.Mensalidades.Queries.ObterMensalidadePorId;
 using JiuJitsu.Application.Pagamento.Commands.CriarCobrancaOnline;
+using JiuJitsu.Application.Pagamento.Commands.VerificarPagamentosGateway;
 using JiuJitsu.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -152,6 +153,16 @@ public class MensalidadesController : ControllerBase
     {
         var total = await _mediator.Send(new AtualizarStatusVencidasCommand(), cancellationToken);
         return Ok(new { mensalidadesAtualizadas = total });
+    }
+
+    /// <summary>Sincroniza manualmente o status de cobranças online com o gateway. Apenas Admin.</summary>
+    [HttpPost("sincronizar-gateway")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SincronizarGateway(CancellationToken cancellationToken)
+    {
+        var confirmados = await _mediator.Send(new VerificarPagamentosGatewayCommand(), cancellationToken);
+        return Ok(new { pagamentosConfirmados = confirmados });
     }
 }
 

@@ -206,7 +206,7 @@ export default function NotificacoesPage() {
                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                       <span className={`badge ${t.canal === 'WhatsApp' ? 'badge-success' : 'badge-info'}`}>{t.canal}</span>
                       <button className="btn btn-secondary btn-sm" onClick={() => setEditandoTemplate({ id: t.id, mensagem: t.mensagem, ativo: t.ativo ?? true })}>Editar</button>
-                      <button className="btn btn-danger btn-sm" onClick={() => removerTemplate(t.id)}>Excluir</button>
+                      <button className="btn btn-danger-outline btn-sm" onClick={() => removerTemplate(t.id)}>Excluir</button>
                     </div>
                   </div>
                   <p style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>{t.mensagem}</p>

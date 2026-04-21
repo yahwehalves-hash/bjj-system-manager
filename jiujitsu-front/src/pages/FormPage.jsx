@@ -21,6 +21,11 @@ const GRAUS = [
   { valor: 4, label: '4° grau' },
 ];
 
+const TIPOS_ATLETA = [
+  { valor: 'Aluno',     label: 'Aluno' },
+  { valor: 'Professor', label: 'Professor' },
+]
+
 const FORM_INICIAL = {
   filialId: '',
   nomeCompleto: '',
@@ -31,6 +36,7 @@ const FORM_INICIAL = {
   dataUltimaGraduacao: '',
   email: '',
   telefone: '',
+  tipoAtleta: 'Aluno',
 };
 
 export function FormPage({ usuario }) {
@@ -68,6 +74,7 @@ export function FormPage({ usuario }) {
           dataUltimaGraduacao: atleta.dataUltimaGraduacao?.slice(0, 10) ?? '',
           email:               atleta.email,
           telefone:            atleta.telefone || '',
+          tipoAtleta:          atleta.tipoAtleta || 'Aluno',
         });
       })
       .catch(() => setErro('Erro ao carregar dados do atleta.'))
@@ -95,6 +102,7 @@ export function FormPage({ usuario }) {
       dataUltimaGraduacao: form.dataUltimaGraduacao,
       email:               form.email,
       telefone:            form.telefone.replace(/\D/g, '') || null,
+      tipoAtleta:          form.tipoAtleta,
     };
 
     try {
@@ -229,6 +237,15 @@ export function FormPage({ usuario }) {
           <small style={{ color: '#6b7280', fontSize: '0.78rem' }}>
             Usado para envio automático de notificações via WhatsApp. Ex: 5585981867765
           </small>
+        </div>
+
+        <div className="campo">
+          <label>Tipo *</label>
+          <select name="tipoAtleta" value={form.tipoAtleta} onChange={handleChange} required>
+            {TIPOS_ATLETA.map(t => (
+              <option key={t.valor} value={t.valor}>{t.label}</option>
+            ))}
+          </select>
         </div>
 
         <div className="acoes-form">

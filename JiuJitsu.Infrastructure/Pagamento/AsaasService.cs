@@ -138,7 +138,68 @@ public class AsaasService : IGatewayPagamento
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Não foi possível consultar status da cobrança {CobrancaId}", cobrancaId);
+            _logger.LogError(ex, "Falha ao consultar status da cobrança {CobrancaId} no Asaas.", cobrancaId);
+            return null;
+        }
+    }
+
+    private static readonly HashSet<string> _statusPagos =
+        new(StringComparer.OrdinalIgnoreCase) { "RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH" };
+
+    public async Task<CobrancaResultado?> BuscarCobrancaExistentePorReferenciaAsync(
+        string referenciaExterna, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var resp = await _http.GetAsync($"payments?externalReference={referenciaExterna}", cancellationToken);
+            if (!resp.IsSuccessStatusCode) return null;
+
+            var lista    = await resp.Content.ReadFromJsonAsync<AsaasListaCobrancasResponse>(_jsonOpts, cancellationToken);
+            var cobranca = lista?.Data?.FirstOrDefault();
+            if (cobranca is null) return null;
+
+            // Tenta buscar o PIX copia e cola da cobrança existente
+            string? pixCopiaCola = null;
+            try
+            {
+                var pixResp = await _http.GetAsync($"payments/{cobranca.Id}/pixQrCode", cancellationToken);
+                if (pixResp.IsSuccessStatusCode)
+                {
+                    var pix = await pixResp.Content.ReadFromJsonAsync<AsaasPixResponse>(_jsonOpts, cancellationToken);
+                    pixCopiaCola = pix?.Payload;
+                }
+            }
+            catch { /* PIX opcional — não impede o retorno */ }
+
+            return new CobrancaResultado(
+                CobrancaId:    cobranca.Id,
+                LinkPagamento: cobranca.InvoiceUrl ?? cobranca.BankSlipUrl,
+                PixCopiaCola:  pixCopiaCola);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao buscar cobrança existente por referência {Referencia}.", referenciaExterna);
+            return null;
+        }
+    }
+
+    public async Task<(string CobrancaId, string Status)?> BuscarPagamentoConfirmadoPorReferenciaAsync(
+        string referenciaExterna, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var resp = await _http.GetAsync($"payments?externalReference={referenciaExterna}", cancellationToken);
+            if (!resp.IsSuccessStatusCode) return null;
+
+            var lista = await resp.Content.ReadFromJsonAsync<AsaasListaCobrancasResponse>(_jsonOpts, cancellationToken);
+            var pago  = lista?.Data?.FirstOrDefault(p => _statusPagos.Contains(p.Status ?? ""));
+            if (pago is null) return null;
+
+            return (pago.Id, pago.Status!);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao buscar pagamentos por referência {Referencia} no Asaas.", referenciaExterna);
             return null;
         }
     }

@@ -28,6 +28,7 @@ export default function MensalidadesPage({ usuario }) {
   const [competenciaGerar, setCompetenciaGerar] = useState('')
   const [gerando, setGerando]           = useState(false)
   const [atualizandoStatus, setAtualizandoStatus] = useState(false)
+  const [sincronizando, setSincronizando]         = useState(false)
   const [modalCobranca, setModalCobranca] = useState(null) // { mensalidadeId, linkPagamento, pixCopiaCola }
   const [gerandoCobranca, setGerandoCobranca] = useState(null) // id sendo processado
   const [copiado, setCopiado]           = useState(false)
@@ -143,6 +144,20 @@ export default function MensalidadesPage({ usuario }) {
     })
   }
 
+  async function sincronizarGateway() {
+    setSincronizando(true)
+    try {
+      const res = await mensalidadesApi.sincronizarGateway()
+      const confirmados = res.data?.pagamentosConfirmados ?? 0
+      mostrarAlerta('success', `Sincronização concluída: ${confirmados} pagamento(s) confirmado(s).`)
+      await carregar()
+    } catch (e) {
+      mostrarAlerta('error', e.response?.data?.erro || 'Erro ao sincronizar com gateway.')
+    } finally {
+      setSincronizando(false)
+    }
+  }
+
   async function atualizarStatus() {
     setAtualizandoStatus(true)
     try {
@@ -166,7 +181,10 @@ export default function MensalidadesPage({ usuario }) {
         {isAdmin && (
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-secondary" onClick={atualizarStatus} disabled={atualizandoStatus}>
-              {atualizandoStatus ? 'Atualizando...' : 'Atualizar Status'}
+              {atualizandoStatus ? 'Atualizando...' : 'Atualizar Vencimentos'}
+            </button>
+            <button className="btn btn-secondary" onClick={sincronizarGateway} disabled={sincronizando}>
+              {sincronizando ? 'Sincronizando...' : 'Sincronizar Asaas'}
             </button>
             <button className="btn btn-primary" onClick={() => setModalGerar(true)}>
               Gerar Mensalidades
@@ -194,8 +212,8 @@ export default function MensalidadesPage({ usuario }) {
       <table className="table">
         <thead>
           <tr>
-            <th>Atleta</th><th>Filial</th><th>Competência</th>
-            <th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th>
+            <th style={{ minWidth: 140 }}>Atleta</th><th>Filial</th><th>Competência</th>
+            <th style={{ whiteSpace: 'nowrap' }}>Valor</th><th style={{ whiteSpace: 'nowrap' }}>Vencimento</th><th>Status</th><th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -204,23 +222,25 @@ export default function MensalidadesPage({ usuario }) {
               <td>{m.nomeAtleta}</td>
               <td>{m.nomeFilial}</td>
               <td>{m.competencia?.slice(0, 7)}</td>
-              <td>R$ {Number(m.valor).toFixed(2)}</td>
-              <td>{m.dataVencimento}</td>
+              <td style={{ whiteSpace: 'nowrap' }}>R$ {Number(m.valor).toFixed(2)}</td>
+              <td style={{ whiteSpace: 'nowrap' }}>{m.dataVencimento}</td>
               <td><span className={`badge ${STATUS_CORES[m.status] || ''}`}>{m.status}</span></td>
-              <td style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                {['Pendente','Vencida','Inadimplente','Negociada'].includes(m.status) && (
-                  <button className="btn btn-sm btn-primary" onClick={() => abrirPagamento(m)}>Pagar</button>
-                )}
-                {['Vencida','Inadimplente'].includes(m.status) && (
-                  <button className="btn btn-sm btn-secondary" onClick={() => abrirNegociacao(m)}>Negociar</button>
-                )}
-                {['Pendente','Vencida','Inadimplente','Negociada'].includes(m.status) && (
-                  m.linkPagamento
-                    ? <button className="btn btn-sm btn-secondary" onClick={() => setModalCobranca({ mensalidadeId: m.id, linkPagamento: m.linkPagamento, pixCopiaCola: m.pixCopiaCola })}>Ver Cobrança</button>
-                    : <button className="btn btn-sm btn-secondary" onClick={() => gerarCobrancaOnline(m)} disabled={gerandoCobranca === m.id}>
-                        {gerandoCobranca === m.id ? '...' : 'Cobrar Online'}
-                      </button>
-                )}
+              <td style={{ whiteSpace: 'nowrap' }}>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  {['Pendente','Vencida','Inadimplente','Negociada'].includes(m.status) && (
+                    <button className="btn btn-sm btn-primary" onClick={() => abrirPagamento(m)}>Pagar</button>
+                  )}
+                  {['Vencida','Inadimplente'].includes(m.status) && (
+                    <button className="btn btn-sm btn-secondary" onClick={() => abrirNegociacao(m)}>Negociar</button>
+                  )}
+                  {['Pendente','Vencida','Inadimplente','Negociada'].includes(m.status) && (
+                    m.linkPagamento
+                      ? <button className="btn btn-sm btn-secondary" onClick={() => setModalCobranca({ mensalidadeId: m.id, linkPagamento: m.linkPagamento, pixCopiaCola: m.pixCopiaCola })}>Ver Cobrança</button>
+                      : <button className="btn btn-sm btn-secondary" onClick={() => gerarCobrancaOnline(m)} disabled={gerandoCobranca === m.id}>
+                          {gerandoCobranca === m.id ? '...' : 'Cobrar Online'}
+                        </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

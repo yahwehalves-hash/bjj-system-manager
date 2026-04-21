@@ -11,5 +11,5 @@ public class ListarTurmasQueryHandler : IRequestHandler<ListarTurmasQuery, Lista
     public ListarTurmasQueryHandler(ITurmaReadRepository turmaRead) => _turmaRead = turmaRead;
 
     public Task<ListaTurmasDto> Handle(ListarTurmasQuery request, CancellationToken cancellationToken)
-        => _turmaRead.ListarAsync(request.FilialId, request.Ativo, cancellationToken);
+        => _turmaRead.ListarAsync(request.FilialId, request.Ativo, request.AtletaId, cancellationToken);
 }

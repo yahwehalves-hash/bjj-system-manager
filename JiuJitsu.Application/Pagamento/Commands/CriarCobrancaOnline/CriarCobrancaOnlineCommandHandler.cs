@@ -47,6 +47,25 @@ public class CriarCobrancaOnlineCommandHandler : IRequestHandler<CriarCobrancaOn
         var atleta = await _atletaRepo.ObterPorIdAsync(mensalidade.AtletaId, cancellationToken)
             ?? throw new KeyNotFoundException($"Atleta '{mensalidade.AtletaId}' não encontrado.");
 
+        // Idempotência: verifica se já existe cobrança no gateway antes de criar outra.
+        // Evita duplicatas em caso de race condition entre o job automático e ação manual.
+        var existente = await _gateway.BuscarCobrancaExistentePorReferenciaAsync(
+            mensalidade.Id.ToString(), cancellationToken);
+
+        if (existente is not null)
+        {
+            _logger.LogInformation(
+                "Cobrança já existente no gateway para mensalidade {MensalidadeId}: {CobrancaId}. Reutilizando.",
+                mensalidade.Id, existente.CobrancaId);
+
+            mensalidade.VincularCobrancaOnline(existente.CobrancaId, existente.LinkPagamento, existente.PixCopiaCola);
+            await _mensalidadeRepo.AtualizarAsync(mensalidade, cancellationToken);
+            await _mensalidadeRepo.SalvarAlteracoesAsync(cancellationToken);
+
+            return new CobrancaOnlineDto(
+                mensalidade.Id, existente.CobrancaId, existente.LinkPagamento, existente.PixCopiaCola);
+        }
+
         var clienteId = await _gateway.ObterOuCriarClienteAsync(
             atleta.Cpf.Valor,
             atleta.NomeCompleto,

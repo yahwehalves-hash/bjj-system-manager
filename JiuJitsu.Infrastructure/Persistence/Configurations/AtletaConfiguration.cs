@@ -88,6 +88,12 @@ public class AtletaConfiguration : IEntityTypeConfiguration<Atleta>
         builder.Property(a => a.FotoBase64)
             .HasColumnName("foto_base64");
 
+        builder.Property(a => a.TipoAtleta)
+            .HasConversion<string>()
+            .IsRequired()
+            .HasDefaultValueSql("'Aluno'")
+            .HasColumnName("tipo_atleta");
+
         // Filtro global de soft delete — consultas só retornam atletas ativos por padrão
         builder.HasQueryFilter(a => a.Ativo);
     }

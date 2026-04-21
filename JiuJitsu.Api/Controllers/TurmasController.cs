@@ -31,10 +31,11 @@ public class TurmasController : ControllerBase
     [ProducesResponseType(typeof(ListaTurmasDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> Listar(
         [FromQuery] bool? ativo,
+        [FromQuery] Guid? atletaId,
         CancellationToken cancellationToken = default)
     {
         var filialId = _filialContexto.IsAdmin ? null : _filialContexto.FilialId;
-        var resultado = await _mediator.Send(new ListarTurmasQuery(filialId, ativo ?? true), cancellationToken);
+        var resultado = await _mediator.Send(new ListarTurmasQuery(filialId, ativo ?? true, atletaId), cancellationToken);
         return Ok(resultado);
     }
 

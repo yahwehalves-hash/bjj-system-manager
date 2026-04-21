@@ -69,6 +69,7 @@ var asaasApiKey  = builder.Configuration["Asaas:ApiKey"]  ?? string.Empty;
 
 var api = builder
     .AddProject<Projects.JiuJitsu_Api>("api")
+    .WithEndpoint("http", e => e.Port = 5207)
     .WithReference(rabbitmq)
     .WithReference(bancoDados)
     .WaitFor(rabbitmq)

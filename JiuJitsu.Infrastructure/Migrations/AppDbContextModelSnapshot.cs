@@ -77,6 +77,13 @@ namespace JiuJitsu.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("telefone");
 
+                    b.Property<string>("TipoAtleta")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValueSql("'Aluno'")
+                        .HasColumnName("tipo_atleta");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FilialId");

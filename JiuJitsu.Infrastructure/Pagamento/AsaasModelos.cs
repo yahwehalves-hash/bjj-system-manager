@@ -17,6 +17,9 @@ internal record AsaasClienteResponse(
 internal record AsaasListaClientesResponse(
     [property: JsonPropertyName("data")] IEnumerable<AsaasClienteResponse> Data);
 
+internal record AsaasListaCobrancasResponse(
+    [property: JsonPropertyName("data")] IEnumerable<AsaasCobrancaResponse>? Data);
+
 // ── Cobranças ────────────────────────────────────────────────────────────────
 
 internal record AsaasCobrancaRequest(

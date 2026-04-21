@@ -9,8 +9,11 @@ using JiuJitsu.Application.Queries.ListarAtletas;
 using JiuJitsu.Application.Queries.ObterAtletaPorId;
 using JiuJitsu.Application.Queries.ObterHistoricoAtleta;
 using JiuJitsu.Domain.Enums;
+using JiuJitsu.Infrastructure.Persistence.Context;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace JiuJitsu.Api.Controllers;
 
@@ -20,11 +23,13 @@ public class AtletasController : ControllerBase
 {
     private readonly IMediator       _mediator;
     private readonly IFilialContexto _filialContexto;
+    private readonly AppDbContext    _db;
 
-    public AtletasController(IMediator mediator, IFilialContexto filialContexto)
+    public AtletasController(IMediator mediator, IFilialContexto filialContexto, AppDbContext db)
     {
         _mediator       = mediator;
         _filialContexto = filialContexto;
+        _db             = db;
     }
 
     /// <summary>Lista atletas com filtros opcionais e paginação</summary>
@@ -73,7 +78,8 @@ public class AtletasController : ControllerBase
             request.Grau,
             request.DataUltimaGraduacao,
             request.Email,
-            request.Telefone);
+            request.Telefone,
+            request.TipoAtleta);
 
         var id = await _mediator.Send(command, cancellationToken);
 
@@ -99,7 +105,8 @@ public class AtletasController : ControllerBase
                 request.Grau,
                 request.DataUltimaGraduacao,
                 request.Email,
-                request.Telefone);
+                request.Telefone,
+                request.TipoAtleta);
 
             await _mediator.Send(command, cancellationToken);
             return Accepted(new { mensagem = "Atualização em processamento." });
@@ -163,6 +170,32 @@ public class AtletasController : ControllerBase
         }
     }
 
+    /// <summary>Retorna a matrícula ativa do atleta (plano vigente)</summary>
+    [HttpGet("{id:guid}/matricula-ativa")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> MatriculaAtiva(Guid id, CancellationToken cancellationToken)
+    {
+        var matricula = await _db.Set<JiuJitsu.Domain.Entities.Matricula>()
+            .Include(m => m.Plano)
+            .Where(m => m.AtletaId == id && m.Status == JiuJitsu.Domain.Enums.StatusMatricula.Ativa)
+            .OrderByDescending(m => m.DataInicio)
+            .Select(m => new
+            {
+                m.Id,
+                m.PlanoId,
+                NomePlano    = m.Plano.Nome,
+                Periodicidade = m.Plano.Periodicidade.ToString(),
+                Valor        = m.ValorCustomizado ?? m.Plano.Valor,
+                m.DataInicio,
+                m.DataFim,
+                m.Status,
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return matricula is null ? NotFound() : Ok(matricula);
+    }
+
     /// <summary>Enfileira a exclusão (soft delete) de um atleta</summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -183,25 +216,29 @@ public class AtletasController : ControllerBase
 
 // Request DTOs — usados apenas na camada de apresentação
 public record CriarAtletaRequest(
-    Guid     FilialId,
-    string   NomeCompleto,
-    string   Cpf,
-    DateOnly DataNascimento,
-    Faixa    Faixa,
-    Grau     Grau,
-    DateOnly DataUltimaGraduacao,
-    string   Email,
-    string?  Telefone = null
+    Guid       FilialId,
+    string     NomeCompleto,
+    string     Cpf,
+    DateOnly   DataNascimento,
+    Faixa      Faixa,
+    Grau       Grau,
+    DateOnly   DataUltimaGraduacao,
+    string     Email,
+    string?    Telefone   = null,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
+    TipoAtleta TipoAtleta = TipoAtleta.Aluno
 );
 
 public record AtualizarAtletaRequest(
-    string   NomeCompleto,
-    DateOnly DataNascimento,
-    Faixa    Faixa,
-    Grau     Grau,
-    DateOnly DataUltimaGraduacao,
-    string   Email,
-    string?  Telefone = null
+    string     NomeCompleto,
+    DateOnly   DataNascimento,
+    Faixa      Faixa,
+    Grau       Grau,
+    DateOnly   DataUltimaGraduacao,
+    string     Email,
+    string?    Telefone   = null,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
+    TipoAtleta TipoAtleta = TipoAtleta.Aluno
 );
 
 public record AdicionarHistoricoManualRequest(

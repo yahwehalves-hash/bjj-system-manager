@@ -17,9 +17,6 @@ public class VerificarPagamentosOnlineHandler
     private readonly IMediator              _mediator;
     private readonly ILogger<VerificarPagamentosOnlineHandler> _logger;
 
-    private static readonly HashSet<string> _statusPagos =
-        new(StringComparer.OrdinalIgnoreCase) { "RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH" };
-
     public VerificarPagamentosOnlineHandler(
         IMensalidadeRepository mensalidadeRepo,
         IGatewayPagamento      gateway,
@@ -44,38 +41,36 @@ public class VerificarPagamentosOnlineHandler
         var pendentes = await _mensalidadeRepo.ListarComCobrancaOnlinePendentesAsync(lote, cancellationToken);
         var lista     = pendentes.ToList();
 
-        if (lista.Count == 0)
-        {
-            _logger.LogDebug("Nenhuma cobrança pendente para verificar.");
-            return;
-        }
+        _logger.LogInformation("Polling: {Total} cobrança(s) pendente(s) para verificar.", lista.Count);
 
-        _logger.LogInformation("Verificando status de {Total} cobranças.", lista.Count);
+        if (lista.Count == 0) return;
 
         var confirmadas = 0;
         foreach (var mensalidade in lista)
         {
             try
             {
-                var status = await _gateway.ConsultarStatusCobrancaAsync(mensalidade.CobrancaExternaId!, cancellationToken);
+                // Consulta por externalReference (ID da mensalidade) — resiliente a cobranças duplicadas.
+                // Encontra qualquer cobrança paga vinculada à mensalidade, independente do ID armazenado.
+                var resultado = await _gateway.BuscarPagamentoConfirmadoPorReferenciaAsync(
+                    mensalidade.Id.ToString(), cancellationToken);
 
-                if (status is null || !_statusPagos.Contains(status))
-                    continue;
+                if (resultado is null) continue;
 
                 await _mediator.Send(new ConfirmarPagamentoOnlineCommand(
-                    mensalidade.CobrancaExternaId!,
+                    resultado.Value.CobrancaId,
                     mensalidade.Valor,
-                    "PIX",
+                    resultado.Value.Status,
                     DateOnly.FromDateTime(DateTime.UtcNow)), cancellationToken);
 
                 confirmadas++;
                 _logger.LogInformation(
-                    "Mensalidade {Id} confirmada via polling. Status: {Status}",
-                    mensalidade.Id, status);
+                    "Mensalidade {Id} confirmada via polling. CobrancaId={CobrancaId} Status={Status}",
+                    mensalidade.Id, resultado.Value.CobrancaId, resultado.Value.Status);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao verificar cobrança {CobrancaId}", mensalidade.CobrancaExternaId);
+                _logger.LogError(ex, "Erro ao verificar mensalidade {MensalidadeId}", mensalidade.Id);
             }
         }
 

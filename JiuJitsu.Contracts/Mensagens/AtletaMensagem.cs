@@ -24,4 +24,6 @@ public class AtletaPayload
     public DateOnly DataUltimaGraduacao { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? Telefone { get; set; }
+    // "Aluno" ou "Professor"
+    public string TipoAtleta { get; set; } = "Aluno";
 }

@@ -40,7 +40,8 @@ public class AtualizarAtletaCommandHandler : IRequestHandler<AtualizarAtletaComm
                 Grau                = (int)request.Grau,
                 DataUltimaGraduacao = request.DataUltimaGraduacao,
                 Email               = request.Email,
-                Telefone            = request.Telefone
+                Telefone            = request.Telefone,
+                TipoAtleta          = request.TipoAtleta.ToString()
             }
         };
 

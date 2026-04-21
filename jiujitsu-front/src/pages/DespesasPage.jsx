@@ -152,7 +152,7 @@ export default function DespesasPage({ usuario }) {
                   <button className="btn btn-sm btn-primary" onClick={() => abrirPagar(d.id)}>Pagar</button>
                 )}
                 {d.status !== 'Cancelada' && (
-                  <button className="btn btn-sm btn-danger" onClick={() => cancelar(d.id)}>Cancelar</button>
+                  <button className="btn btn-sm btn-danger-outline" onClick={() => cancelar(d.id)}>Cancelar</button>
                 )}
               </td>
             </tr>

@@ -21,9 +21,24 @@ public interface IGatewayPagamento
         string   referenciaExterna,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Consulta o status atual de uma cobrança. Retorna null se não encontrada.</summary>
+    /// <summary>Consulta o status atual de uma cobrança pelo ID. Retorna null se não encontrada.</summary>
     Task<string?> ConsultarStatusCobrancaAsync(
         string cobrancaId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Busca qualquer cobrança existente pelo externalReference (qualquer status).
+    /// Usado para idempotência na criação — evita duplicatas em caso de race condition.
+    /// </summary>
+    Task<CobrancaResultado?> BuscarCobrancaExistentePorReferenciaAsync(
+        string referenciaExterna, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Busca a cobrança confirmada (RECEIVED/CONFIRMED) pelo externalReference.
+    /// Retorna o ID e status da cobrança paga, ou null se nenhuma estiver paga.
+    /// Resiliente a cobranças duplicadas — encontra a correta pelo ID da mensalidade.
+    /// </summary>
+    Task<(string CobrancaId, string Status)?> BuscarPagamentoConfirmadoPorReferenciaAsync(
+        string referenciaExterna, CancellationToken cancellationToken = default);
 
     /// <summary>Indica se o gateway está configurado.</summary>
     bool Configurado { get; }

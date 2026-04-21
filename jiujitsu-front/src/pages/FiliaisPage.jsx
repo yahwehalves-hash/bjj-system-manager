@@ -108,7 +108,7 @@ export default function FiliaisPage() {
               </span></td>
               <td>
                 <button className="btn btn-sm btn-secondary" onClick={() => iniciarEdicao(f)}>Editar</button>
-                {f.ativo && <button className="btn btn-sm btn-danger" onClick={() => desativar(f.id)}>Desativar</button>}
+                {f.ativo && <button className="btn btn-sm btn-danger-outline" onClick={() => desativar(f.id)}>Desativar</button>}
               </td>
             </tr>
           ))}

@@ -32,6 +32,7 @@ public class AtletaReadRepository : IAtletaReadRepository
                 a.data_ultima_graduacao AS DataUltimaGraduacao,
                 a.email                 AS Email,
                 a.telefone              AS Telefone,
+                a.tipo_atleta           AS TipoAtleta,
                 a.foto_base64           AS FotoBase64,
                 a.ativo                 AS Ativo,
                 a.criado_em             AS CriadoEm,
@@ -72,6 +73,7 @@ public class AtletaReadRepository : IAtletaReadRepository
                 cpf             AS Cpf,
                 faixa           AS Faixa,
                 grau            AS Grau,
+                tipo_atleta     AS TipoAtleta,
                 ativo           AS Ativo
             FROM atletas
             WHERE {where}

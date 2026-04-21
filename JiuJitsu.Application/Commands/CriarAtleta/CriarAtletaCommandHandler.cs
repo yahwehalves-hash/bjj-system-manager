@@ -41,7 +41,8 @@ public class CriarAtletaCommandHandler : IRequestHandler<CriarAtletaCommand, Gui
                 Grau                = (int)request.Grau,
                 DataUltimaGraduacao = request.DataUltimaGraduacao,
                 Email               = request.Email,
-                Telefone            = request.Telefone
+                Telefone            = request.Telefone,
+                TipoAtleta          = request.TipoAtleta.ToString()
             }
         };
 

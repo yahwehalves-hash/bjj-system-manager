@@ -227,7 +227,7 @@ export default function PlanosPage() {
                     <td>{p.descricao || '—'}</td>
                     <td className="acoes">
                       <button className="btn-secundario btn-sm" onClick={() => abrirEditarPlano(p)}>Editar</button>
-                      <button className="btn-perigo btn-sm" onClick={() => desativarPlano(p.id)}>Desativar</button>
+                      <button className="btn-perigo-outline btn-sm" onClick={() => desativarPlano(p.id)}>Desativar</button>
                     </td>
                   </tr>
                 ))}
@@ -356,7 +356,7 @@ export default function PlanosPage() {
                     </td>
                     <td className="acoes">
                       {m.status === 'Ativa' && (
-                        <button className="btn-perigo btn-sm" onClick={() => cancelarMatricula(m.id)}>Cancelar</button>
+                        <button className="btn-perigo-outline btn-sm" onClick={() => cancelarMatricula(m.id)}>Cancelar</button>
                       )}
                     </td>
                   </tr>
