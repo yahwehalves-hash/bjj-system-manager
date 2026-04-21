@@ -24,11 +24,17 @@ public class CobrancaOnlineJob : BackgroundService
     {
         _scopeFactory      = scopeFactory;
         _logger            = logger;
-        _intervaloSegundos = config.GetValue<int>("Worker:IntervaloSegundos");
+        _intervaloSegundos = config.GetValue<int?>("Worker:Jobs:CobrancaOnline") ?? -1;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (_intervaloSegundos == 0)
+        {
+            _logger.LogInformation("CobrancaOnlineJob desativado via configuração (Worker:Jobs:CobrancaOnline=0).");
+            return;
+        }
+
         var modoTeste = _intervaloSegundos > 0;
 
         _logger.LogInformation(
