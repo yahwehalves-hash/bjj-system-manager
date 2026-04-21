@@ -34,7 +34,9 @@ public class MensalidadeReadRepository : IMensalidadeReadRepository
                 m.forma_pagamento       AS FormaPagamento,
                 m.observacao,
                 m.criado_em             AS CriadoEm,
-                m.atualizado_em         AS AtualizadoEm
+                m.atualizado_em         AS AtualizadoEm,
+                m.link_pagamento        AS LinkPagamento,
+                m.pix_copia_cola        AS PixCopiaCola
             FROM mensalidades m
             INNER JOIN atletas a ON a.id = m.atleta_id
             INNER JOIN filiais f ON f.id = m.filial_id
@@ -78,7 +80,9 @@ public class MensalidadeReadRepository : IMensalidadeReadRepository
                 m.data_vencimento   AS DataVencimento,
                 m.data_pagamento    AS DataPagamento,
                 m.status,
-                m.forma_pagamento   AS FormaPagamento
+                m.forma_pagamento   AS FormaPagamento,
+                m.link_pagamento    AS LinkPagamento,
+                m.pix_copia_cola    AS PixCopiaCola
             FROM mensalidades m
             INNER JOIN atletas a ON a.id = m.atleta_id
             INNER JOIN filiais f ON f.id = m.filial_id

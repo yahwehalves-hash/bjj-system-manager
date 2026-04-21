@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Swords, CreditCard,
   Receipt, FileText, ClipboardList, Building2, UserCog,
-  Settings, Bell, ChevronLeft, ChevronRight, LogOut,
+  Settings, Bell, ChevronLeft, ChevronRight, LogOut, CalendarCheck,
 } from 'lucide-react';
 
 function FaixaIcon({ size = 18 }) {
@@ -61,6 +61,7 @@ export default function Sidebar({ usuario, onLogout }) {
         <SidebarLink to="/dashboard"    icon={LayoutDashboard} label="Dashboard"    collapsed={collapsed} />
         <SidebarLink to="/atletas"      icon={Users}           label="Atletas"      collapsed={collapsed} />
         <SidebarLink to="/turmas"       icon={Swords}          label="Turmas"       collapsed={collapsed} />
+        <SidebarLink to="/presenca"     icon={CalendarCheck}   label="Presença"     collapsed={collapsed} />
         <SidebarLink to="/graduacao"    icon={FaixaIcon}       label="Graduação"    collapsed={collapsed} />
         <SidebarLink to="/mensalidades" icon={CreditCard}      label="Mensalidades" collapsed={collapsed} />
 

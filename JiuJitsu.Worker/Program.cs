@@ -39,10 +39,20 @@ builder.Services.AddScoped<AtualizarStatusMensalidadesHandler>();
 // Handlers do Worker — notificações
 builder.Services.AddScoped<DispararAniversariosHandler>();
 
+// Handlers do Worker — presença
+builder.Services.AddScoped<VerificarInativosHandler>();
+
+// Handlers do Worker — pagamento online
+builder.Services.AddScoped<GerarCobrancasOnlineHandler>();
+builder.Services.AddScoped<VerificarPagamentosOnlineHandler>();
+
 // Consumers e Jobs como HostedService (BackgroundService)
 builder.Services.AddHostedService<AtletaConsumer>();
 builder.Services.AddHostedService<FinanceiroJob>();
 builder.Services.AddHostedService<AniversarioJob>();
+builder.Services.AddHostedService<InativoJob>();
+builder.Services.AddHostedService<CobrancaOnlineJob>();
+builder.Services.AddHostedService<PollingPagamentosJob>();
 builder.Services.AddHostedService<NotificacaoConsumer>();
 
 var host = builder.Build();

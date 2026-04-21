@@ -493,6 +493,11 @@ namespace JiuJitsu.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("CobrancaExternaId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("asaas_cobranca_id");
+
                     b.Property<Guid>("AtletaId")
                         .HasColumnType("uuid")
                         .HasColumnName("atleta_id");
@@ -525,10 +530,20 @@ namespace JiuJitsu.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("forma_pagamento");
 
+                    b.Property<string>("LinkPagamento")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("link_pagamento");
+
                     b.Property<string>("Observacao")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("observacao");
+
+                    b.Property<string>("PixCopiaCola")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("pix_copia_cola");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -604,6 +619,50 @@ namespace JiuJitsu.Infrastructure.Migrations
                     b.HasIndex("FilialId", "Ativo");
 
                     b.ToTable("planos", (string)null);
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.RegistroPresenca", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AtletaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("atleta_id");
+
+                    b.Property<DateTime>("DataHora")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_hora");
+
+                    b.Property<Guid>("FilialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("filial_id");
+
+                    b.Property<string>("Origem")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("origem");
+
+                    b.Property<Guid?>("RegistradoPor")
+                        .HasColumnType("uuid")
+                        .HasColumnName("registrado_por");
+
+                    b.Property<Guid>("TurmaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("turma_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AtletaId");
+
+                    b.HasIndex("TurmaId");
+
+                    b.HasIndex("FilialId", "DataHora");
+
+                    b.HasIndex("AtletaId", "TurmaId", "DataHora");
+
+                    b.ToTable("registros_presenca", (string)null);
                 });
 
             modelBuilder.Entity("JiuJitsu.Domain.Entities.RegraGraduacao", b =>
@@ -973,6 +1032,25 @@ namespace JiuJitsu.Infrastructure.Migrations
                     b.Navigation("Atleta");
 
                     b.Navigation("Filial");
+                });
+
+            modelBuilder.Entity("JiuJitsu.Domain.Entities.RegistroPresenca", b =>
+                {
+                    b.HasOne("JiuJitsu.Domain.Entities.Atleta", "Atleta")
+                        .WithMany()
+                        .HasForeignKey("AtletaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JiuJitsu.Domain.Entities.Turma", "Turma")
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Atleta");
+
+                    b.Navigation("Turma");
                 });
 
             modelBuilder.Entity("JiuJitsu.Domain.Entities.Turma", b =>

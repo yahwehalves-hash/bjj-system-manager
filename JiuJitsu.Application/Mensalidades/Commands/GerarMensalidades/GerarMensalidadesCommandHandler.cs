@@ -1,7 +1,9 @@
+using JiuJitsu.Application.Pagamento.Commands.CriarCobrancaOnline;
 using JiuJitsu.Domain.Entities;
 using JiuJitsu.Domain.Repositories;
 using JiuJitsu.Application.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace JiuJitsu.Application.Mensalidades.Commands.GerarMensalidades;
 
@@ -11,17 +13,26 @@ public class GerarMensalidadesCommandHandler : IRequestHandler<GerarMensalidades
     private readonly IConfiguracaoReadRepository _configuracaoRead;
     private readonly IMensalidadeRepository      _mensalidadeRepo;
     private readonly IMatriculaRepository        _matriculaRepo;
+    private readonly IGatewayPagamento            _gateway;
+    private readonly IMediator                   _mediator;
+    private readonly ILogger<GerarMensalidadesCommandHandler> _logger;
 
     public GerarMensalidadesCommandHandler(
         IAtletaReadRepository atletaRead,
         IConfiguracaoReadRepository configuracaoRead,
         IMensalidadeRepository mensalidadeRepo,
-        IMatriculaRepository matriculaRepo)
+        IMatriculaRepository matriculaRepo,
+        IGatewayPagamento gateway,
+        IMediator mediator,
+        ILogger<GerarMensalidadesCommandHandler> logger)
     {
         _atletaRead      = atletaRead;
         _configuracaoRead = configuracaoRead;
         _mensalidadeRepo = mensalidadeRepo;
         _matriculaRepo   = matriculaRepo;
+        _gateway         = gateway;
+        _mediator        = mediator;
+        _logger          = logger;
     }
 
     public async Task<int> Handle(GerarMensalidadesCommand request, CancellationToken cancellationToken)
@@ -63,8 +74,26 @@ public class GerarMensalidadesCommandHandler : IRequestHandler<GerarMensalidades
         {
             await _mensalidadeRepo.AdicionarVariasAsync(mensalidades, cancellationToken);
             await _mensalidadeRepo.SalvarAlteracoesAsync(cancellationToken);
+
+            if (_gateway.Configurado)
+                await CriarCobrancasAsync(mensalidades, cancellationToken);
         }
 
         return mensalidades.Count;
+    }
+
+    private async Task CriarCobrancasAsync(List<Mensalidade> mensalidades, CancellationToken cancellationToken)
+    {
+        foreach (var mensalidade in mensalidades)
+        {
+            try
+            {
+                await _mediator.Send(new CriarCobrancaOnlineCommand(mensalidade.Id), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Não foi possível criar cobrança online para mensalidade {Id} — será retentado pelo job.", mensalidade.Id);
+            }
+        }
     }
 }

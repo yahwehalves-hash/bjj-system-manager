@@ -28,6 +28,9 @@ export default function MensalidadesPage({ usuario }) {
   const [competenciaGerar, setCompetenciaGerar] = useState('')
   const [gerando, setGerando]           = useState(false)
   const [atualizandoStatus, setAtualizandoStatus] = useState(false)
+  const [modalCobranca, setModalCobranca] = useState(null) // { mensalidadeId, linkPagamento, pixCopiaCola }
+  const [gerandoCobranca, setGerandoCobranca] = useState(null) // id sendo processado
+  const [copiado, setCopiado]           = useState(false)
   const tamanhoPagina = 15
 
   useEffect(() => { carregar() }, [pagina, filtros])
@@ -120,6 +123,26 @@ export default function MensalidadesPage({ usuario }) {
     }
   }
 
+  async function gerarCobrancaOnline(m) {
+    setGerandoCobranca(m.id)
+    try {
+      const res = await mensalidadesApi.cobrancaOnline(m.id)
+      setModalCobranca(res.data)
+      await carregar()
+    } catch (e) {
+      mostrarAlerta('error', e.response?.data?.erro || 'Erro ao gerar cobrança online.')
+    } finally {
+      setGerandoCobranca(null)
+    }
+  }
+
+  function copiarPix(texto) {
+    navigator.clipboard.writeText(texto).then(() => {
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 2000)
+    })
+  }
+
   async function atualizarStatus() {
     setAtualizandoStatus(true)
     try {
@@ -184,12 +207,19 @@ export default function MensalidadesPage({ usuario }) {
               <td>R$ {Number(m.valor).toFixed(2)}</td>
               <td>{m.dataVencimento}</td>
               <td><span className={`badge ${STATUS_CORES[m.status] || ''}`}>{m.status}</span></td>
-              <td>
+              <td style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {['Pendente','Vencida','Inadimplente','Negociada'].includes(m.status) && (
                   <button className="btn btn-sm btn-primary" onClick={() => abrirPagamento(m)}>Pagar</button>
                 )}
                 {['Vencida','Inadimplente'].includes(m.status) && (
                   <button className="btn btn-sm btn-secondary" onClick={() => abrirNegociacao(m)}>Negociar</button>
+                )}
+                {['Pendente','Vencida','Inadimplente','Negociada'].includes(m.status) && (
+                  m.linkPagamento
+                    ? <button className="btn btn-sm btn-secondary" onClick={() => setModalCobranca({ mensalidadeId: m.id, linkPagamento: m.linkPagamento, pixCopiaCola: m.pixCopiaCola })}>Ver Cobrança</button>
+                    : <button className="btn btn-sm btn-secondary" onClick={() => gerarCobrancaOnline(m)} disabled={gerandoCobranca === m.id}>
+                        {gerandoCobranca === m.id ? '...' : 'Cobrar Online'}
+                      </button>
                 )}
               </td>
             </tr>
@@ -246,6 +276,38 @@ export default function MensalidadesPage({ usuario }) {
               <button className="btn btn-secondary" onClick={() => { setModalGerar(false); setCompetenciaGerar('') }} disabled={gerando}>
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalCobranca && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Cobrança Online</h3>
+            {modalCobranca.pixCopiaCola && (
+              <div style={{ marginBottom: 12 }}>
+                <label>PIX Copia e Cola</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
+                  <input className="input" readOnly value={modalCobranca.pixCopiaCola}
+                    style={{ fontSize: '0.75rem', flex: 1 }} />
+                  <button className="btn btn-sm btn-primary" onClick={() => copiarPix(modalCobranca.pixCopiaCola)}>
+                    {copiado ? 'Copiado!' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+            )}
+            {modalCobranca.linkPagamento && (
+              <div style={{ marginBottom: 12 }}>
+                <label>Link de Pagamento</label>
+                <a href={modalCobranca.linkPagamento} target="_blank" rel="noreferrer"
+                  className="btn btn-secondary" style={{ display: 'inline-block', marginTop: 4 }}>
+                  Abrir link
+                </a>
+              </div>
+            )}
+            <div className="form-actions">
+              <button className="btn btn-secondary" onClick={() => setModalCobranca(null)}>Fechar</button>
             </div>
           </div>
         </div>

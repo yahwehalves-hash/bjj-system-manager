@@ -77,6 +77,18 @@ public class MensalidadeConfiguration : IEntityTypeConfiguration<Mensalidade>
         builder.Property(m => m.AtualizadoEm)
             .HasColumnName("atualizado_em");
 
+        builder.Property(m => m.CobrancaExternaId)
+            .HasMaxLength(50)
+            .HasColumnName("asaas_cobranca_id"); // coluna legada — nome preservado para evitar migration
+
+        builder.Property(m => m.LinkPagamento)
+            .HasMaxLength(500)
+            .HasColumnName("link_pagamento");
+
+        builder.Property(m => m.PixCopiaCola)
+            .HasMaxLength(1000)
+            .HasColumnName("pix_copia_cola");
+
         // Índices para consultas frequentes de dashboard e job de inadimplência
         builder.HasIndex(m => new { m.FilialId, m.Status });
         builder.HasIndex(m => new { m.DataVencimento, m.Status });

@@ -22,5 +22,16 @@ public interface IMensalidadeRepository
         int diasParaInadimplencia,
         CancellationToken cancellationToken = default);
 
+    // Busca mensalidades sem cobrança online para o job de integração
+    Task<IEnumerable<Mensalidade>> ListarSemCobrancaOnlineAsync(
+        int limite, CancellationToken cancellationToken = default);
+
+    // Busca mensalidades com cobrança online ainda não pagas (para polling de status)
+    Task<IEnumerable<Mensalidade>> ListarComCobrancaOnlinePendentesAsync(
+        int limite, CancellationToken cancellationToken = default);
+
+    Task<Mensalidade?> ObterPorCobrancaExternaIdAsync(
+        string cobrancaId, CancellationToken cancellationToken = default);
+
     Task SalvarAlteracoesAsync(CancellationToken cancellationToken = default);
 }

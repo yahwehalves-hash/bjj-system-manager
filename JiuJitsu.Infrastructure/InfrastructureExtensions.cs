@@ -4,6 +4,7 @@ using JiuJitsu.Domain.Repositories;
 using JiuJitsu.Infrastructure.Email;
 using JiuJitsu.Infrastructure.Email.Configuracoes;
 using JiuJitsu.Infrastructure.Messaging;
+using JiuJitsu.Infrastructure.Pagamento;
 using JiuJitsu.Infrastructure.Persistence.Repositories;
 using JiuJitsu.Infrastructure.ReadModel;
 using JiuJitsu.Infrastructure.Relatorios;
@@ -31,6 +32,7 @@ public static class InfrastructureExtensions
         services.AddScoped<IContratoRepository, ContratoRepository>();
         services.AddScoped<IPlanoRepository, PlanoRepository>();
         services.AddScoped<IMatriculaRepository, MatriculaRepository>();
+        services.AddScoped<IRegistroPresencaRepository, RegistroPresencaRepository>();
 
         // Repositórios — leitura (Dapper)
         services.AddScoped<IAtletaReadRepository, AtletaReadRepository>();
@@ -42,9 +44,14 @@ public static class InfrastructureExtensions
         services.AddScoped<IDashboardReadRepository, DashboardReadRepository>();
         services.AddScoped<ITurmaReadRepository, TurmaReadRepository>();
         services.AddScoped<IGraduacaoReadRepository, GraduacaoReadRepository>();
+        services.AddScoped<IPresencaReadRepository, PresencaReadRepository>();
 
         // Relatórios
         services.AddScoped<IRelatorioService, RelatorioService>();
+
+        // Gateway de pagamento (implementação atual: Asaas)
+        services.AddScoped<IGatewayPagamento, AsaasService>();
+        services.AddHttpClient("asaas");
 
         // Notificações
         services.AddScoped<INotificacaoService, Notificacoes.NotificacaoService>();

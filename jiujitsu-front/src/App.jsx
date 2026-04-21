@@ -17,6 +17,7 @@ import GraduacaoPage from './pages/GraduacaoPage'
 import NotificacoesPage from './pages/NotificacoesPage';
 import { ContratosPage } from './pages/ContratosPage';
 import PlanosPage from './pages/PlanosPage';
+import PresencaPage from './pages/PresencaPage';
 
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="/atletas/:id/editar"     element={<FormPage usuario={usuario} />} />
           <Route path="/atletas/:id/historico"  element={<HistoricoPage />} />
           <Route path="/turmas"                 element={<TurmasPage usuario={usuario} />} />
+          <Route path="/presenca"               element={<PresencaPage usuario={usuario} />} />
           <Route path="/graduacao"              element={<GraduacaoPage usuario={usuario} />} />
           <Route path="/mensalidades"           element={<MensalidadesPage usuario={usuario} />} />
           <Route path="/despesas"               element={<DespesasPage usuario={usuario} />} />

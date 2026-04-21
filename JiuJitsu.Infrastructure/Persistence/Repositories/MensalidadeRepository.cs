@@ -54,6 +54,33 @@ public class MensalidadeRepository : IMensalidadeRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Mensalidade>> ListarSemCobrancaOnlineAsync(
+        int limite, CancellationToken cancellationToken = default)
+        => await _contexto.Mensalidades
+            .Where(m => m.CobrancaExternaId == null
+                     && (m.Status == Domain.Enums.StatusMensalidade.Pendente
+                      || m.Status == Domain.Enums.StatusMensalidade.Vencida
+                      || m.Status == Domain.Enums.StatusMensalidade.Negociada))
+            .OrderBy(m => m.DataVencimento)
+            .Take(limite)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IEnumerable<Mensalidade>> ListarComCobrancaOnlinePendentesAsync(
+        int limite, CancellationToken cancellationToken = default)
+        => await _contexto.Mensalidades
+            .Where(m => m.CobrancaExternaId != null
+                     && (m.Status == Domain.Enums.StatusMensalidade.Pendente
+                      || m.Status == Domain.Enums.StatusMensalidade.Vencida
+                      || m.Status == Domain.Enums.StatusMensalidade.Negociada))
+            .OrderBy(m => m.DataVencimento)
+            .Take(limite)
+            .ToListAsync(cancellationToken);
+
+    public Task<Mensalidade?> ObterPorCobrancaExternaIdAsync(
+        string cobrancaId, CancellationToken cancellationToken = default)
+        => _contexto.Mensalidades
+            .FirstOrDefaultAsync(m => m.CobrancaExternaId == cobrancaId, cancellationToken);
+
     public async Task SalvarAlteracoesAsync(CancellationToken cancellationToken = default)
         => await _contexto.SaveChangesAsync(cancellationToken);
 }

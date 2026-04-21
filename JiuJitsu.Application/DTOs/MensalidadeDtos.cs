@@ -12,7 +12,9 @@ public record MensalidadeResumoDto(
     DateOnly DataVencimento,
     DateOnly? DataPagamento,
     string   Status,
-    string?  FormaPagamento);
+    string?  FormaPagamento,
+    string?  LinkPagamento,
+    string?  PixCopiaCola);
 
 public record MensalidadeDetalheDto(
     Guid     Id,
@@ -29,7 +31,9 @@ public record MensalidadeDetalheDto(
     string?  FormaPagamento,
     string?  Observacao,
     DateTime CriadoEm,
-    DateTime? AtualizadoEm);
+    DateTime? AtualizadoEm,
+    string?  LinkPagamento,
+    string?  PixCopiaCola);
 
 public record ListaMensalidadesDto(
     IEnumerable<MensalidadeResumoDto> Itens,

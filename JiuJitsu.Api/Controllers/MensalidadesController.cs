@@ -1,4 +1,5 @@
 using JiuJitsu.Application.DTOs;
+
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Application.Mensalidades.Commands.AtualizarStatusVencidas;
 using JiuJitsu.Application.Mensalidades.Commands.CancelarMensalidade;
@@ -7,6 +8,7 @@ using JiuJitsu.Application.Mensalidades.Commands.NegociarMensalidade;
 using JiuJitsu.Application.Mensalidades.Commands.RegistrarPagamento;
 using JiuJitsu.Application.Mensalidades.Queries.ListarMensalidades;
 using JiuJitsu.Application.Mensalidades.Queries.ObterMensalidadePorId;
+using JiuJitsu.Application.Pagamento.Commands.CriarCobrancaOnline;
 using JiuJitsu.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -114,6 +116,32 @@ public class MensalidadesController : ControllerBase
     {
         var total = await _mediator.Send(new GerarMensalidadesCommand(request.Competencia), cancellationToken);
         return Ok(new { mensalidadesGeradas = total });
+    }
+
+    /// <summary>Gera cobrança online para uma mensalidade específica.</summary>
+    [HttpPost("{id:guid}/cobranca-online")]
+    [Authorize(Roles = "Admin,GestorFilial")]
+    [ProducesResponseType(typeof(CobrancaOnlineDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GerarCobrancaOnline(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var resultado = await _mediator.Send(new CriarCobrancaOnlineCommand(id), cancellationToken);
+            return Ok(resultado);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { erro = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(502, new { erro = $"Erro no gateway de pagamento: {ex.Message}" });
+        }
     }
 
     /// <summary>Força atualização de status de mensalidades vencidas/inadimplentes. Apenas Admin.</summary>

@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<Contrato>             Contratos            => Set<Contrato>();
     public DbSet<Plano>                Planos               => Set<Plano>();
     public DbSet<Matricula>            Matriculas           => Set<Matricula>();
+    public DbSet<RegistroPresenca>     RegistrosPresenca    => Set<RegistroPresenca>();
 
     public AppDbContext(DbContextOptions<AppDbContext> opcoes) : base(opcoes) { }
 

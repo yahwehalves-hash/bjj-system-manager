@@ -18,6 +18,11 @@ public class Mensalidade
     public DateTime          CriadoEm      { get; private set; }
     public DateTime?         AtualizadoEm  { get; private set; }
 
+    // Pagamento online — campos preenchidos após integração com o gateway de pagamento
+    public string? CobrancaExternaId { get; private set; }
+    public string? LinkPagamento   { get; private set; }
+    public string? PixCopiaCola    { get; private set; }
+
     // Navigation properties — preenchidas pelo EF Core
     public Atleta Atleta { get; private set; } = null!;
     public Filial Filial { get; private set; } = null!;
@@ -91,6 +96,14 @@ public class Mensalidade
         if (Status != StatusMensalidade.Vencida) return;
         Status       = StatusMensalidade.Inadimplente;
         AtualizadoEm = DateTime.UtcNow;
+    }
+
+    public void VincularCobrancaOnline(string cobrancaId, string? linkPagamento, string? pixCopiaCola)
+    {
+        CobrancaExternaId = cobrancaId;
+        LinkPagamento   = linkPagamento;
+        PixCopiaCola    = pixCopiaCola;
+        AtualizadoEm    = DateTime.UtcNow;
     }
 
     public void Cancelar(string? motivo)

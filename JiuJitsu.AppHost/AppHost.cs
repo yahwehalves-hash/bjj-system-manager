@@ -59,6 +59,14 @@ var frontend = builder
 
 // ── API REST ─────────────────────────────────────────────────────────────────
 
+// ── Asaas — Pagamento Online ─────────────────────────────────────────────────
+// Em dev: usar sandbox.asaas.com. Deixar ApiKey vazio para desabilitar.
+// Para ativar: crie uma conta sandbox em https://sandbox.asaas.com e cole a API key.
+var asaasBaseUrl = builder.Configuration["Asaas:BaseUrl"] ?? "https://sandbox.asaas.com/api/v3";
+var asaasApiKey  = builder.Configuration["Asaas:ApiKey"]  ?? string.Empty;
+
+// ── API REST ─────────────────────────────────────────────────────────────────
+
 var api = builder
     .AddProject<Projects.JiuJitsu_Api>("api")
     .WithReference(rabbitmq)
@@ -67,7 +75,9 @@ var api = builder
     .WaitFor(bancoDados)
     .WithEnvironment("EvolutionApi__BaseUrl", evolutionApi.GetEndpoint("http"))
     .WithEnvironment("EvolutionApi__ApiKey", "jiujitsu-dev-key")
-    .WithEnvironment("EvolutionApi__Instance", "jiujitsu");
+    .WithEnvironment("EvolutionApi__Instance", "jiujitsu")
+    .WithEnvironment("Asaas__BaseUrl", asaasBaseUrl)
+    .WithEnvironment("Asaas__ApiKey", asaasApiKey);
 
 // ── Worker ───────────────────────────────────────────────────────────────────
 
@@ -79,6 +89,8 @@ builder
     .WaitFor(bancoDados)
     .WithEnvironment("EvolutionApi__BaseUrl", evolutionApi.GetEndpoint("http"))
     .WithEnvironment("EvolutionApi__ApiKey", "jiujitsu-dev-key")
-    .WithEnvironment("EvolutionApi__Instance", "jiujitsu");
+    .WithEnvironment("EvolutionApi__Instance", "jiujitsu")
+    .WithEnvironment("Asaas__BaseUrl", asaasBaseUrl)
+    .WithEnvironment("Asaas__ApiKey", asaasApiKey);
 
 builder.Build().Run();
