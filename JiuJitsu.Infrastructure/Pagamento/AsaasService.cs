@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using JiuJitsu.Application.Interfaces;
+using JiuJitsu.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -40,7 +41,8 @@ public class AsaasService : IGatewayPagamento
     }
 
     public async Task<string> ObterOuCriarClienteAsync(
-        string cpf, string nome, string email, string? telefone,
+        string            cpf, string nome, string email, string? telefone,
+        CanalNotificacao  canalNotificacao = CanalNotificacao.Email,
         CancellationToken cancellationToken = default)
     {
         // Busca cliente existente por CPF
@@ -50,7 +52,10 @@ public class AsaasService : IGatewayPagamento
             var lista = await busca.Content.ReadFromJsonAsync<AsaasListaClientesResponse>(_jsonOpts, cancellationToken);
             var existente = lista?.Data?.FirstOrDefault();
             if (existente is not null)
+            {
+                await ConfigurarNotificacoesClienteAsync(existente.Id, canalNotificacao, cancellationToken);
                 return existente.Id;
+            }
         }
 
         // Cria novo cliente
@@ -67,7 +72,66 @@ public class AsaasService : IGatewayPagamento
             ?? throw new InvalidOperationException("Resposta inválida ao criar cliente no Asaas.");
 
         _logger.LogInformation("Cliente Asaas criado: {ClienteId} para CPF {Cpf}", criado.Id, cpf);
+
+        await ConfigurarNotificacoesClienteAsync(criado.Id, canalNotificacao, cancellationToken);
+
         return criado.Id;
+    }
+
+    /// <summary>
+    /// Configura as notificações de e-mail do cliente no Asaas:
+    /// - PAYMENT_CREATED: aviso ao gerar a cobrança
+    /// - PAYMENT_OVERDUE: lembrete diário de inadimplência (1 dia após vencimento)
+    /// Chamado automaticamente ao criar um novo cliente.
+    /// </summary>
+    /// <summary>
+    /// Configura as notificações do cliente no Asaas conforme canal preferido:
+    /// - Email: só e-mail habilitado
+    /// - WhatsApp: só WhatsApp habilitado
+    /// - Ambos: e-mail e WhatsApp habilitados
+    /// Eventos configurados: PAYMENT_CREATED (imediato) e PAYMENT_OVERDUE (1x/dia após vencimento).
+    /// </summary>
+    private async Task ConfigurarNotificacoesClienteAsync(
+        string clienteId, CanalNotificacao canalNotificacao, CancellationToken ct)
+    {
+        try
+        {
+            var resp = await _http.GetAsync($"customers/{clienteId}/notifications", ct);
+            if (!resp.IsSuccessStatusCode) return;
+
+            var lista = await resp.Content.ReadFromJsonAsync<AsaasListaNotificacoesResponse>(_jsonOpts, ct);
+            if (lista?.Data is null) return;
+
+            var usaEmail    = canalNotificacao is CanalNotificacao.Email    or CanalNotificacao.Ambos;
+            var usaWhatsApp = canalNotificacao is CanalNotificacao.WhatsApp or CanalNotificacao.Ambos;
+
+            var eventosPrioritarios = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "PAYMENT_CREATED", 0 },
+                { "PAYMENT_OVERDUE", 1 },
+            };
+
+            foreach (var notif in lista.Data.Where(n => eventosPrioritarios.ContainsKey(n.Event)))
+            {
+                var offset = eventosPrioritarios[notif.Event];
+                var update = new AsaasNotificacaoUpdateRequest(
+                    Enabled:                    true,
+                    EmailEnabledForCustomer:    usaEmail,
+                    WhatsappEnabledForCustomer: usaWhatsApp,
+                    ScheduleOffset:             offset);
+
+                await _http.PutAsJsonAsync($"customers/{clienteId}/notifications/{notif.Id}", update, ct);
+            }
+
+            _logger.LogInformation(
+                "Notificações Asaas configuradas para cliente {ClienteId}: canal={Canal}.",
+                clienteId, canalNotificacao);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "Não foi possível configurar notificações Asaas para cliente {ClienteId}.", clienteId);
+        }
     }
 
     public async Task<CobrancaResultado> CriarCobrancaAsync(

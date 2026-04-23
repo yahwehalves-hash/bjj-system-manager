@@ -50,7 +50,8 @@ public class AtualizarAtletaHandler
             dataUltimaGraduacao: payload.DataUltimaGraduacao,
             email:               new Email(payload.Email),
             telefone:            payload.Telefone,
-            tipoAtleta:          Enum.TryParse<TipoAtleta>(payload.TipoAtleta, out var tipo) ? tipo : TipoAtleta.Aluno);
+            tipoAtleta:          Enum.TryParse<TipoAtleta>(payload.TipoAtleta, out var tipo) ? tipo : TipoAtleta.Aluno,
+            canalNotificacao:    Enum.TryParse<CanalNotificacao>(payload.CanalNotificacao, out var canal) ? canal : CanalNotificacao.Email);
 
         if (graduacaoMudou)
         {

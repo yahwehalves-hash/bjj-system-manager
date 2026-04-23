@@ -1,37 +1,34 @@
-using System.Text;
-using System.Text.Json;
+using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Contracts.Mensagens;
-using JiuJitsu.Infrastructure.Messaging.Constantes;
 using JiuJitsu.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
 
 namespace JiuJitsu.Worker.Handlers;
 
 /// <summary>
-/// Dispara notificações de aniversário para todos os atletas ativos
+/// Dispara notificações de aniversário por e-mail para todos os atletas ativos
 /// cujo dia e mês de nascimento coincidem com a data de hoje.
 /// </summary>
 public class DispararAniversariosHandler
 {
-    private readonly AppDbContext                       _db;
-    private readonly IConnection                       _conexao;
+    private readonly AppDbContext                          _db;
+    private readonly INotificacaoService                  _notificacaoService;
     private readonly ILogger<DispararAniversariosHandler> _logger;
 
     public DispararAniversariosHandler(
-        AppDbContext db,
-        IConnection conexao,
+        AppDbContext                          db,
+        INotificacaoService                  notificacaoService,
         ILogger<DispararAniversariosHandler> logger)
     {
-        _db      = db;
-        _conexao = conexao;
-        _logger  = logger;
+        _db                 = db;
+        _notificacaoService = notificacaoService;
+        _logger             = logger;
     }
 
     public async Task ProcessarAsync(CancellationToken cancellationToken)
     {
-        var hoje = DateOnly.FromDateTime(DateTime.Now); // Usa horário local (não UTC) para datas de aniversário
+        var hoje = DateOnly.FromDateTime(DateTime.Now);
 
         var aniversariantes = await _db.Atletas
             .Include(a => a.Filial)
@@ -48,45 +45,30 @@ public class DispararAniversariosHandler
 
         _logger.LogInformation("{Total} aniversariante(s) encontrado(s) para {Data}.", aniversariantes.Count, hoje);
 
-        using var canal = _conexao.CreateModel();
-
-        canal.ExchangeDeclare(RabbitMqConstantes.NotificacaoExchangeDlx, ExchangeType.Fanout, durable: true);
-        canal.QueueDeclare(RabbitMqConstantes.NotificacaoFilaDlq, durable: true, exclusive: false, autoDelete: false);
-        canal.QueueBind(RabbitMqConstantes.NotificacaoFilaDlq, RabbitMqConstantes.NotificacaoExchangeDlx, string.Empty);
-
-        canal.ExchangeDeclare(RabbitMqConstantes.NotificacaoExchange, ExchangeType.Direct, durable: true);
-        canal.QueueDeclare(
-            RabbitMqConstantes.NotificacaoFila, durable: true, exclusive: false, autoDelete: false,
-            arguments: new Dictionary<string, object> { { "x-dead-letter-exchange", RabbitMqConstantes.NotificacaoExchangeDlx } });
-        canal.QueueBind(RabbitMqConstantes.NotificacaoFila, RabbitMqConstantes.NotificacaoExchange, RabbitMqConstantes.RoutingNotificacaoAniversario);
-
-        var props = canal.CreateBasicProperties();
-        props.Persistent  = true;
-        props.ContentType = "application/json";
-
         foreach (var atleta in aniversariantes)
         {
-            var mensagem = new NotificacaoMensagem
+            try
             {
-                Evento       = "aniversario.atleta",
-                AtletaId     = atleta.Id,
-                NomeAtleta   = atleta.NomeCompleto,
-                Email        = atleta.Email.Valor,
-                Telefone     = atleta.Telefone,
-                NomeAcademia = atleta.Filial?.Nome ?? "Academia",
-                OcorridoEm   = DateTime.UtcNow,
-            };
+                var mensagem = new NotificacaoMensagem
+                {
+                    Evento       = "aniversario.atleta",
+                    AtletaId     = atleta.Id,
+                    NomeAtleta   = atleta.NomeCompleto,
+                    Email        = atleta.Email.Valor,
+                    Telefone     = atleta.Telefone,
+                    NomeAcademia = atleta.Filial?.Nome ?? "Academia",
+                    OcorridoEm   = DateTime.UtcNow,
+                };
 
-            var corpo = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(mensagem));
-            canal.BasicPublish(
-                exchange:        RabbitMqConstantes.NotificacaoExchange,
-                routingKey:      RabbitMqConstantes.RoutingNotificacaoAniversario,
-                mandatory:       false,
-                basicProperties: props,
-                body:            corpo);
+                await _notificacaoService.EnviarAsync(mensagem, cancellationToken);
 
-            _logger.LogInformation("Notificação de aniversário disparada para {Atleta} ({Email}).",
-                atleta.NomeCompleto, atleta.Email.Valor);
+                _logger.LogInformation("Notificação de aniversário enviada para {Atleta} ({Email}).",
+                    atleta.NomeCompleto, atleta.Email.Valor);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao notificar aniversário do atleta {AtletaId}.", atleta.Id);
+            }
         }
     }
 }

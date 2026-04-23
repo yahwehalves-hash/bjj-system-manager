@@ -9,14 +9,8 @@ api.interceptors.request.use(config => {
 })
 
 export const notificacoesApi = {
-  listarTemplates:  ()          => api.get('/api/notificacoes/templates'),
-  criarTemplate:    (data)      => api.post('/api/notificacoes/templates', data),
-  atualizarTemplate:(id, data)  => api.put(`/api/notificacoes/templates/${id}`, data),
-  removerTemplate:  (id)        => api.delete(`/api/notificacoes/templates/${id}`),
-
-  // WhatsApp
-  whatsappConfig:  ()     => api.get('/api/notificacoes/whatsapp/config'),
-  whatsappStatus:  ()     => api.get('/api/notificacoes/whatsapp/status'),
-  whatsappConectar: ()    => api.post('/api/notificacoes/whatsapp/conectar'),
-  whatsappTestar:  (data) => api.post('/api/notificacoes/whatsapp/testar', data),
+  listarTemplates:   ()         => api.get('/api/notificacoes/templates'),
+  criarTemplate:     (data)     => api.post('/api/notificacoes/templates', data),
+  atualizarTemplate: (id, data) => api.put(`/api/notificacoes/templates/${id}`, data),
+  removerTemplate:   (id)       => api.delete(`/api/notificacoes/templates/${id}`),
 }

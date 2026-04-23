@@ -24,7 +24,13 @@ const GRAUS = [
 const TIPOS_ATLETA = [
   { valor: 'Aluno',     label: 'Aluno' },
   { valor: 'Professor', label: 'Professor' },
-]
+];
+
+const CANAIS_NOTIFICACAO = [
+  { valor: 'Email',    label: 'E-mail' },
+  { valor: 'WhatsApp', label: 'WhatsApp' },
+  { valor: 'Ambos',    label: 'E-mail e WhatsApp' },
+];
 
 const FORM_INICIAL = {
   filialId: '',
@@ -37,6 +43,7 @@ const FORM_INICIAL = {
   email: '',
   telefone: '',
   tipoAtleta: 'Aluno',
+  canalNotificacao: 'Email',
 };
 
 export function FormPage({ usuario }) {
@@ -75,6 +82,7 @@ export function FormPage({ usuario }) {
           email:               atleta.email,
           telefone:            atleta.telefone || '',
           tipoAtleta:          atleta.tipoAtleta || 'Aluno',
+          canalNotificacao:    atleta.canalNotificacao || 'Email',
         });
       })
       .catch(() => setErro('Erro ao carregar dados do atleta.'))
@@ -103,6 +111,7 @@ export function FormPage({ usuario }) {
       email:               form.email,
       telefone:            form.telefone.replace(/\D/g, '') || null,
       tipoAtleta:          form.tipoAtleta,
+      canalNotificacao:    form.canalNotificacao,
     };
 
     try {
@@ -226,16 +235,29 @@ export function FormPage({ usuario }) {
         </div>
 
         <div className="campo">
-          <label>Telefone / WhatsApp</label>
+          <label>Telefone{(form.canalNotificacao === 'WhatsApp' || form.canalNotificacao === 'Ambos') ? ' *' : ''}</label>
           <input
             type="tel"
             name="telefone"
             value={form.telefone}
             onChange={handleChange}
+            required={form.canalNotificacao === 'WhatsApp' || form.canalNotificacao === 'Ambos'}
             placeholder="5585999999999 (DDI+DDD+número)"
           />
           <small style={{ color: '#6b7280', fontSize: '0.78rem' }}>
-            Usado para envio automático de notificações via WhatsApp. Ex: 5585981867765
+            Obrigatório para receber notificações via WhatsApp. Ex: 5585981867765
+          </small>
+        </div>
+
+        <div className="campo">
+          <label>Canal de Notificação *</label>
+          <select name="canalNotificacao" value={form.canalNotificacao} onChange={handleChange} required>
+            {CANAIS_NOTIFICACAO.map(c => (
+              <option key={c.valor} value={c.valor}>{c.label}</option>
+            ))}
+          </select>
+          <small style={{ color: '#6b7280', fontSize: '0.78rem' }}>
+            Define como o atleta recebe notificações de cobrança (geração e inadimplência).
           </small>
         </div>
 

@@ -11,20 +11,17 @@ public class CriarCobrancaOnlineCommandHandler : IRequestHandler<CriarCobrancaOn
     private readonly IMensalidadeRepository _mensalidadeRepo;
     private readonly IAtletaRepository      _atletaRepo;
     private readonly IGatewayPagamento      _gateway;
-    private readonly IEmailService          _email;
     private readonly ILogger<CriarCobrancaOnlineCommandHandler> _logger;
 
     public CriarCobrancaOnlineCommandHandler(
         IMensalidadeRepository mensalidadeRepo,
         IAtletaRepository      atletaRepo,
         IGatewayPagamento      gateway,
-        IEmailService          email,
         ILogger<CriarCobrancaOnlineCommandHandler> logger)
     {
         _mensalidadeRepo = mensalidadeRepo;
         _atletaRepo      = atletaRepo;
         _gateway         = gateway;
-        _email           = email;
         _logger          = logger;
     }
 
@@ -71,6 +68,7 @@ public class CriarCobrancaOnlineCommandHandler : IRequestHandler<CriarCobrancaOn
             atleta.NomeCompleto,
             atleta.Email.Valor,
             atleta.Telefone,
+            atleta.CanalNotificacao,
             cancellationToken);
 
         var descricao = $"Mensalidade {mensalidade.Competencia:MM/yyyy}";
@@ -90,58 +88,12 @@ public class CriarCobrancaOnlineCommandHandler : IRequestHandler<CriarCobrancaOn
             "Cobrança vinculada à mensalidade {MensalidadeId}: {CobrancaId}",
             mensalidade.Id, resultado.CobrancaId);
 
-        await EnviarEmailCobrancaAsync(atleta.Email.Valor, atleta.NomeCompleto,
-            mensalidade.Competencia, mensalidade.Valor,
-            resultado.PixCopiaCola, resultado.LinkPagamento,
-            cancellationToken);
+        // Notificação ao aluno é gerenciada pelo Asaas (e-mail de cobrança criada + lembretes de inadimplência)
 
         return new CobrancaOnlineDto(
             mensalidade.Id,
             resultado.CobrancaId,
             resultado.LinkPagamento,
             resultado.PixCopiaCola);
-    }
-
-    private async Task EnviarEmailCobrancaAsync(
-        string email, string nomeAtleta, DateOnly competencia, decimal valor,
-        string? pixCopiaCola, string? linkPagamento, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var corpo = $"""
-                Olá, {nomeAtleta}!
-
-                Sua mensalidade de {competencia:MM/yyyy} está disponível para pagamento.
-
-                Valor: R$ {valor:N2}
-
-                """;
-
-            if (!string.IsNullOrWhiteSpace(pixCopiaCola))
-                corpo += $"""
-                PIX Copia e Cola:
-                {pixCopiaCola}
-
-                """;
-
-            if (!string.IsNullOrWhiteSpace(linkPagamento))
-                corpo += $"""
-                Ou acesse o link de pagamento:
-                {linkPagamento}
-
-                """;
-
-            corpo += "Em caso de dúvidas, entre em contato com sua academia.";
-
-            await _email.EnviarAsync(
-                email,
-                $"Mensalidade {competencia:MM/yyyy} — R$ {valor:N2}",
-                corpo,
-                cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Não foi possível enviar email de cobrança para {Email}", email);
-        }
     }
 }

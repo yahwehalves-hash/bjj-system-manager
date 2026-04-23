@@ -79,7 +79,8 @@ public class AtletasController : ControllerBase
             request.DataUltimaGraduacao,
             request.Email,
             request.Telefone,
-            request.TipoAtleta);
+            request.TipoAtleta,
+            request.CanalNotificacao);
 
         var id = await _mediator.Send(command, cancellationToken);
 
@@ -106,7 +107,8 @@ public class AtletasController : ControllerBase
                 request.DataUltimaGraduacao,
                 request.Email,
                 request.Telefone,
-                request.TipoAtleta);
+                request.TipoAtleta,
+                request.CanalNotificacao);
 
             await _mediator.Send(command, cancellationToken);
             return Accepted(new { mensagem = "Atualização em processamento." });
@@ -216,29 +218,33 @@ public class AtletasController : ControllerBase
 
 // Request DTOs — usados apenas na camada de apresentação
 public record CriarAtletaRequest(
-    Guid       FilialId,
-    string     NomeCompleto,
-    string     Cpf,
-    DateOnly   DataNascimento,
-    Faixa      Faixa,
-    Grau       Grau,
-    DateOnly   DataUltimaGraduacao,
-    string     Email,
-    string?    Telefone   = null,
+    Guid             FilialId,
+    string           NomeCompleto,
+    string           Cpf,
+    DateOnly         DataNascimento,
+    Faixa            Faixa,
+    Grau             Grau,
+    DateOnly         DataUltimaGraduacao,
+    string           Email,
+    string?          Telefone         = null,
     [property: JsonConverter(typeof(JsonStringEnumConverter))]
-    TipoAtleta TipoAtleta = TipoAtleta.Aluno
+    TipoAtleta       TipoAtleta       = TipoAtleta.Aluno,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
+    CanalNotificacao CanalNotificacao = CanalNotificacao.Email
 );
 
 public record AtualizarAtletaRequest(
-    string     NomeCompleto,
-    DateOnly   DataNascimento,
-    Faixa      Faixa,
-    Grau       Grau,
-    DateOnly   DataUltimaGraduacao,
-    string     Email,
-    string?    Telefone   = null,
+    string           NomeCompleto,
+    DateOnly         DataNascimento,
+    Faixa            Faixa,
+    Grau             Grau,
+    DateOnly         DataUltimaGraduacao,
+    string           Email,
+    string?          Telefone         = null,
     [property: JsonConverter(typeof(JsonStringEnumConverter))]
-    TipoAtleta TipoAtleta = TipoAtleta.Aluno
+    TipoAtleta       TipoAtleta       = TipoAtleta.Aluno,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
+    CanalNotificacao CanalNotificacao = CanalNotificacao.Email
 );
 
 public record AdicionarHistoricoManualRequest(

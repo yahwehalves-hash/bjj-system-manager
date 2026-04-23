@@ -32,6 +32,7 @@ public class AtletaReadRepository : IAtletaReadRepository
                 a.data_ultima_graduacao AS DataUltimaGraduacao,
                 a.email                 AS Email,
                 a.telefone              AS Telefone,
+                a.canal_notificacao     AS CanalNotificacao,
                 a.tipo_atleta           AS TipoAtleta,
                 a.foto_base64           AS FotoBase64,
                 a.ativo                 AS Ativo,

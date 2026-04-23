@@ -20,6 +20,7 @@ public record AtletaDetalheDto
     public DateOnly  DataUltimaGraduacao   { get; set; }
     public string    Email                 { get; set; } = "";
     public string?   Telefone              { get; set; }
+    public string    CanalNotificacao      { get; set; } = "Email";
     public string?   FotoBase64            { get; set; }
     public bool      Ativo                 { get; set; }
     public DateTime  CriadoEm             { get; set; }

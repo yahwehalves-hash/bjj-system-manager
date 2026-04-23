@@ -55,7 +55,6 @@ public static class InfrastructureExtensions
 
         // Notificações
         services.AddScoped<INotificacaoService, Notificacoes.NotificacaoService>();
-        services.AddHttpClient("evolution");
 
         // Contratos
         services.AddScoped<IContratoService, Contratos.ContratoService>();

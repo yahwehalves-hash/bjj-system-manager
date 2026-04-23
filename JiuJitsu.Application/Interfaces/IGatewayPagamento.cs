@@ -1,3 +1,5 @@
+using JiuJitsu.Domain.Enums;
+
 namespace JiuJitsu.Application.Interfaces;
 
 public record CobrancaResultado(
@@ -7,9 +9,10 @@ public record CobrancaResultado(
 
 public interface IGatewayPagamento
 {
-    /// <summary>Cria ou recupera um cliente no gateway pelo CPF.</summary>
+    /// <summary>Cria ou recupera um cliente no gateway pelo CPF. Configura notificações conforme canal preferido do atleta.</summary>
     Task<string> ObterOuCriarClienteAsync(
-        string cpf, string nome, string email, string? telefone,
+        string            cpf, string nome, string email, string? telefone,
+        CanalNotificacao  canalNotificacao = CanalNotificacao.Email,
         CancellationToken cancellationToken = default);
 
     /// <summary>Cria uma cobrança no gateway e retorna o link de pagamento e PIX.</summary>
