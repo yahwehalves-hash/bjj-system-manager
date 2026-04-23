@@ -24,11 +24,17 @@ public class InativoJob : BackgroundService
     {
         _scopeFactory      = scopeFactory;
         _logger            = logger;
-        _intervaloSegundos = config.GetValue<int>("Worker:IntervaloSegundos");
+        _intervaloSegundos = config.GetValue<int?>("Worker:Jobs:Inativo") ?? -1;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (_intervaloSegundos == 0)
+        {
+            _logger.LogInformation("InativoJob desativado via configuração (Worker:Jobs:Inativo=0).");
+            return;
+        }
+
         var modoTeste = _intervaloSegundos > 0;
 
         _logger.LogInformation(
@@ -37,7 +43,6 @@ public class InativoJob : BackgroundService
                 : "InativoJob iniciado em MODO PRODUÇÃO — executa diariamente às 09:00 UTC.",
             _intervaloSegundos);
 
-        // Aguarda antes da primeira execução
         await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)

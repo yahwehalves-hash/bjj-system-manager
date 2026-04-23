@@ -22,11 +22,17 @@ public class FinanceiroJob : BackgroundService
     {
         _scopeFactory      = scopeFactory;
         _logger            = logger;
-        _intervaloSegundos = config.GetValue<int>("Worker:IntervaloSegundos");
+        _intervaloSegundos = config.GetValue<int?>("Worker:Jobs:Financeiro") ?? -1;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (_intervaloSegundos == 0)
+        {
+            _logger.LogInformation("FinanceiroJob desativado via configuração (Worker:Jobs:Financeiro=0).");
+            return;
+        }
+
         var modoTeste = _intervaloSegundos > 0;
 
         if (modoTeste)

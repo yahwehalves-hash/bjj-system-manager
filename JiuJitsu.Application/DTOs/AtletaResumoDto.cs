@@ -8,5 +8,6 @@ public record AtletaResumoDto(
     string Cpf,
     string Faixa,
     int    Grau,
+    string TipoAtleta,
     bool   Ativo
 );

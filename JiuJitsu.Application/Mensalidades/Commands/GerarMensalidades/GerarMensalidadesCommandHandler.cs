@@ -92,7 +92,9 @@ public class GerarMensalidadesCommandHandler : IRequestHandler<GerarMensalidades
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Não foi possível criar cobrança online para mensalidade {Id} — será retentado pelo job.", mensalidade.Id);
+                _logger.LogError(ex,
+                    "Falha ao criar cobrança online para mensalidade {MensalidadeId} (atleta {AtletaId}, competência {Competencia}). Será retentado pelo job.",
+                    mensalidade.Id, mensalidade.AtletaId, mensalidade.Competencia.ToString("MM/yyyy"));
             }
         }
     }

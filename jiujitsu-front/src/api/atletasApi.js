@@ -45,4 +45,8 @@ export const atletasApi = {
   // Atualizar foto do atleta (base64)
   atualizarFoto: (id, fotoBase64) =>
     api.put(`/api/atletas/${id}/foto`, { fotoBase64 }).then((r) => r.data),
+
+  // Matrícula ativa (plano vigente)
+  matriculaAtiva: (id) =>
+    api.get(`/api/atletas/${id}/matricula-ativa`).then((r) => r.data),
 };

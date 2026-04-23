@@ -24,11 +24,17 @@ public class AniversarioJob : BackgroundService
     {
         _scopeFactory      = scopeFactory;
         _logger            = logger;
-        _intervaloSegundos = config.GetValue<int>("Worker:IntervaloSegundos");
+        _intervaloSegundos = config.GetValue<int?>("Worker:Jobs:Aniversario") ?? -1;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (_intervaloSegundos == 0)
+        {
+            _logger.LogInformation("AniversarioJob desativado via configuração (Worker:Jobs:Aniversario=0).");
+            return;
+        }
+
         var modoTeste = _intervaloSegundos > 0;
 
         if (modoTeste)
@@ -36,7 +42,6 @@ public class AniversarioJob : BackgroundService
         else
             _logger.LogInformation("AniversarioJob iniciado em MODO PRODUÇÃO — executa diariamente às 08:00 UTC.");
 
-        // Aguarda um pouco para não executar imediatamente ao subir
         await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)

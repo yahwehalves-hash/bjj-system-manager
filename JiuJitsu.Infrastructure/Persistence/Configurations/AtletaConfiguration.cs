@@ -1,4 +1,5 @@
 using JiuJitsu.Domain.Entities;
+using JiuJitsu.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -87,6 +88,19 @@ public class AtletaConfiguration : IEntityTypeConfiguration<Atleta>
 
         builder.Property(a => a.FotoBase64)
             .HasColumnName("foto_base64");
+
+        builder.Property(a => a.TipoAtleta)
+            .HasConversion<string>()
+            .IsRequired()
+            .HasDefaultValueSql("'Aluno'")
+            .HasColumnName("tipo_atleta");
+
+        builder.Property(a => a.CanalNotificacao)
+            .HasConversion<string>()
+            .IsRequired()
+            .HasMaxLength(20)
+            .HasDefaultValue(CanalNotificacao.Email)
+            .HasColumnName("canal_notificacao");
 
         // Filtro global de soft delete — consultas só retornam atletas ativos por padrão
         builder.HasQueryFilter(a => a.Ativo);

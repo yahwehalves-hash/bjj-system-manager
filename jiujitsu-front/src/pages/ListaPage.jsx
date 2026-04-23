@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { atletasApi } from '../api/atletasApi';
+import { turmasApi } from '../api/turmasApi';
 import { AtletaFiltros } from '../components/AtletaFiltros';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 
@@ -42,6 +43,8 @@ export function ListaPage() {
   const [aviso, setAviso] = useState('');
   const [confirmarExclusao, setConfirmarExclusao] = useState(null);
   const [detalhe, setDetalhe] = useState(null); // atleta completo para exibir no modal
+  const [detalheMatricula, setDetalheMatricula] = useState(undefined); // undefined=carregando, null=sem matrícula
+  const [detalheTurmas, setDetalheTurmas] = useState([]);
 
   useEffect(() => {
     buscar();
@@ -73,6 +76,15 @@ export function ListaPage() {
     try {
       const atleta = await atletasApi.obterPorId(id);
       setDetalhe(atleta);
+      setDetalheMatricula(undefined);
+      setDetalheTurmas([]);
+      // carrega matrícula e turmas em paralelo (best-effort)
+      atletasApi.matriculaAtiva(id)
+        .then(m => setDetalheMatricula(m))
+        .catch(() => setDetalheMatricula(null));
+      turmasApi.listarPorAtleta(id)
+        .then(r => setDetalheTurmas(r?.itens || []))
+        .catch(() => setDetalheTurmas([]));
     } catch {
       setErro('Erro ao carregar detalhes do atleta.');
     }
@@ -161,7 +173,7 @@ export function ListaPage() {
                       Editar
                     </button>
                     <button
-                      className="btn-perigo btn-sm"
+                      className="btn-perigo-outline btn-sm"
                       onClick={() => setConfirmarExclusao(atleta.id)}
                     >
                       Excluir
@@ -202,7 +214,7 @@ export function ListaPage() {
               <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Detalhes do Atleta</h2>
               <button
                 className="btn-secundario btn-sm"
-                onClick={() => setDetalhe(null)}
+                onClick={() => { setDetalhe(null); setDetalheMatricula(undefined); setDetalheTurmas([]) }}
               >
                 Fechar
               </button>
@@ -258,6 +270,36 @@ export function ListaPage() {
                   <span>Cadastrado em</span>
                   <span>{formatarData(detalhe.criadoEm?.slice(0, 10))}</span>
                 </div>
+              )}
+            </div>
+
+            {/* Plano vigente */}
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 6, color: '#4a5568' }}>Plano Vigente</div>
+              {detalheMatricula === undefined ? (
+                <span style={{ color: '#999', fontSize: '0.85rem' }}>Carregando...</span>
+              ) : detalheMatricula === null ? (
+                <span style={{ color: '#999', fontSize: '0.85rem' }}>Sem matrícula ativa</span>
+              ) : (
+                <span style={{ fontSize: '0.9rem' }}>
+                  {detalheMatricula.nomePlano} — R$ {Number(detalheMatricula.valor).toFixed(2)} / {detalheMatricula.periodicidade}
+                </span>
+              )}
+            </div>
+
+            {/* Turmas */}
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 6, color: '#4a5568' }}>Turmas</div>
+              {detalheTurmas.length === 0 ? (
+                <span style={{ color: '#999', fontSize: '0.85rem' }}>Sem turmas vinculadas</span>
+              ) : (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {detalheTurmas.map(t => (
+                    <li key={t.id} style={{ fontSize: '0.88rem', padding: '2px 0' }}>
+                      {t.nome} — {t.diasSemana} às {t.horario}
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
 

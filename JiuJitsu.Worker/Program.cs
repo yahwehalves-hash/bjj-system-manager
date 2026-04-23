@@ -53,7 +53,6 @@ builder.Services.AddHostedService<AniversarioJob>();
 builder.Services.AddHostedService<InativoJob>();
 builder.Services.AddHostedService<CobrancaOnlineJob>();
 builder.Services.AddHostedService<PollingPagamentosJob>();
-builder.Services.AddHostedService<NotificacaoConsumer>();
 
 var host = builder.Build();
 

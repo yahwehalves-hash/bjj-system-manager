@@ -17,11 +17,12 @@ public class TurmaReadRepository : ITurmaReadRepository
     }
 
     public async Task<ListaTurmasDto> ListarAsync(
-        Guid? filialId, bool? ativo, CancellationToken cancellationToken = default)
+        Guid? filialId, bool? ativo, Guid? atletaId = null, CancellationToken cancellationToken = default)
     {
         var condicoes = new List<string>();
-        if (filialId.HasValue)        condicoes.Add("t.filial_id = @FilialId");
-        if (ativo.HasValue)           condicoes.Add("t.ativo = @Ativo");
+        if (filialId.HasValue) condicoes.Add("t.filial_id = @FilialId");
+        if (ativo.HasValue)    condicoes.Add("t.ativo = @Ativo");
+        if (atletaId.HasValue) condicoes.Add("EXISTS (SELECT 1 FROM atletas_turmas ax WHERE ax.turma_id = t.id AND ax.atleta_id = @AtletaId)");
 
         var where = condicoes.Count > 0 ? "WHERE " + string.Join(" AND ", condicoes) : string.Empty;
 
@@ -49,7 +50,7 @@ public class TurmaReadRepository : ITurmaReadRepository
 
         await using var conexao = new NpgsqlConnection(_connectionString);
         var itens = (await conexao.QueryAsync<TurmaResumoDto>(
-            sql, new { FilialId = filialId, Ativo = ativo })).ToList();
+            sql, new { FilialId = filialId, Ativo = ativo, AtletaId = atletaId })).ToList();
 
         return new ListaTurmasDto(itens, itens.Count);
     }

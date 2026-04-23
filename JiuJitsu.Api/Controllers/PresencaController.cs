@@ -9,6 +9,7 @@ using JiuJitsu.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace JiuJitsu.Api.Controllers;
 
@@ -19,11 +20,13 @@ public class PresencaController : ControllerBase
 {
     private readonly IMediator       _mediator;
     private readonly IFilialContexto _filialContexto;
+    private readonly ILogger<PresencaController> _logger;
 
-    public PresencaController(IMediator mediator, IFilialContexto filialContexto)
+    public PresencaController(IMediator mediator, IFilialContexto filialContexto, ILogger<PresencaController> logger)
     {
         _mediator        = mediator;
         _filialContexto  = filialContexto;
+        _logger          = logger;
     }
 
     /// <summary>Registra presença de um atleta em uma turma.</summary>
@@ -36,7 +39,10 @@ public class PresencaController : ControllerBase
     {
         var filialId = _filialContexto.FilialId ?? request.FilialId;
         if (filialId is null)
+        {
+            _logger.LogWarning("Tentativa de registrar presença sem FilialId. Atleta={AtletaId} Turma={TurmaId}", request.AtletaId, request.TurmaId);
             return BadRequest(new { erro = "FilialId é obrigatório." });
+        }
 
         try
         {
@@ -64,7 +70,10 @@ public class PresencaController : ControllerBase
     {
         var filialId = _filialContexto.FilialId ?? request.FilialId;
         if (filialId is null)
+        {
+            _logger.LogWarning("Tentativa de registrar chamada em lote sem FilialId. Turma={TurmaId}", request.TurmaId);
             return BadRequest(new { erro = "FilialId é obrigatório." });
+        }
 
         var total = await _mediator.Send(new RegistrarPresencaEmLoteCommand(
             request.TurmaId,

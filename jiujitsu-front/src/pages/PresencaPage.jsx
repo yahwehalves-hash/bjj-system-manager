@@ -67,7 +67,7 @@ export default function PresencaPage({ usuario }) {
     try {
       const resp = await presencaApi.registrarEmLote({
         turmaId:  turmaSelecionada.id,
-        filialId: usuario.filialId ?? null,
+        filialId: turmaSelecionada.filialId,
         atletaIds: [...marcados],
       })
       setFeedback({ tipo: 'ok', msg: `${resp.data.registrados} presença(s) registrada(s).` })

@@ -342,6 +342,8 @@ main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
 
 .btn-perigo     { background: #e53e3e; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
 .btn-perigo:hover { background: #c53030; }
+.btn-perigo-outline { background: transparent; color: #e53e3e; border: 1px solid #e53e3e; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+.btn-perigo-outline:hover { background: #fff5f5; }
 
 .btn-sm { padding: 5px 10px; font-size: 0.82rem; }
 
@@ -442,6 +444,8 @@ main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
 .btn-secondary:hover { background: #cbd5e0; }
 .btn-danger    { background: #e53e3e; color: #fff; }
 .btn-danger:hover    { background: #c53030; }
+.btn-danger-outline { background: transparent; color: #e53e3e; border: 1px solid #e53e3e; }
+.btn-danger-outline:hover { background: #fff5f5; }
 .btn-sm { padding: 4px 10px; font-size: 0.82rem; }
 
 /* ── Table ──────────────────────────────────── */

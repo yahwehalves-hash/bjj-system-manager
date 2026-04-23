@@ -1,3 +1,5 @@
+using JiuJitsu.Domain.Enums;
+
 namespace JiuJitsu.Application.Interfaces;
 
 public record CobrancaResultado(
@@ -7,9 +9,10 @@ public record CobrancaResultado(
 
 public interface IGatewayPagamento
 {
-    /// <summary>Cria ou recupera um cliente no gateway pelo CPF.</summary>
+    /// <summary>Cria ou recupera um cliente no gateway pelo CPF. Configura notificações conforme canal preferido do atleta.</summary>
     Task<string> ObterOuCriarClienteAsync(
-        string cpf, string nome, string email, string? telefone,
+        string            cpf, string nome, string email, string? telefone,
+        CanalNotificacao  canalNotificacao = CanalNotificacao.Email,
         CancellationToken cancellationToken = default);
 
     /// <summary>Cria uma cobrança no gateway e retorna o link de pagamento e PIX.</summary>
@@ -21,9 +24,24 @@ public interface IGatewayPagamento
         string   referenciaExterna,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Consulta o status atual de uma cobrança. Retorna null se não encontrada.</summary>
+    /// <summary>Consulta o status atual de uma cobrança pelo ID. Retorna null se não encontrada.</summary>
     Task<string?> ConsultarStatusCobrancaAsync(
         string cobrancaId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Busca qualquer cobrança existente pelo externalReference (qualquer status).
+    /// Usado para idempotência na criação — evita duplicatas em caso de race condition.
+    /// </summary>
+    Task<CobrancaResultado?> BuscarCobrancaExistentePorReferenciaAsync(
+        string referenciaExterna, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Busca a cobrança confirmada (RECEIVED/CONFIRMED) pelo externalReference.
+    /// Retorna o ID e status da cobrança paga, ou null se nenhuma estiver paga.
+    /// Resiliente a cobranças duplicadas — encontra a correta pelo ID da mensalidade.
+    /// </summary>
+    Task<(string CobrancaId, string Status)?> BuscarPagamentoConfirmadoPorReferenciaAsync(
+        string referenciaExterna, CancellationToken cancellationToken = default);
 
     /// <summary>Indica se o gateway está configurado.</summary>
     bool Configurado { get; }

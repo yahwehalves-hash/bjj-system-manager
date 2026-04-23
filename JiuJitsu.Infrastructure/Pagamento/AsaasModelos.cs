@@ -17,6 +17,9 @@ internal record AsaasClienteResponse(
 internal record AsaasListaClientesResponse(
     [property: JsonPropertyName("data")] IEnumerable<AsaasClienteResponse> Data);
 
+internal record AsaasListaCobrancasResponse(
+    [property: JsonPropertyName("data")] IEnumerable<AsaasCobrancaResponse>? Data);
+
 // ── Cobranças ────────────────────────────────────────────────────────────────
 
 internal record AsaasCobrancaRequest(
@@ -37,6 +40,24 @@ internal record AsaasPixResponse(
     [property: JsonPropertyName("encodedImage")] string? EncodedImage,
     [property: JsonPropertyName("payload")]      string? Payload,
     [property: JsonPropertyName("expirationDate")] string? ExpirationDate);
+
+// ── Notificações de cliente ───────────────────────────────────────────────────
+
+internal record AsaasListaNotificacoesResponse(
+    [property: JsonPropertyName("data")] IEnumerable<AsaasNotificacaoResponse>? Data);
+
+internal record AsaasNotificacaoResponse(
+    [property: JsonPropertyName("id")]                      string Id,
+    [property: JsonPropertyName("event")]                   string Event,
+    [property: JsonPropertyName("enabled")]                 bool   Enabled,
+    [property: JsonPropertyName("emailEnabledForCustomer")] bool   EmailEnabledForCustomer,
+    [property: JsonPropertyName("scheduleOffset")]          int    ScheduleOffset);
+
+internal record AsaasNotificacaoUpdateRequest(
+    [property: JsonPropertyName("enabled")]                    bool Enabled,
+    [property: JsonPropertyName("emailEnabledForCustomer")]    bool EmailEnabledForCustomer,
+    [property: JsonPropertyName("whatsappEnabledForCustomer")] bool WhatsappEnabledForCustomer,
+    [property: JsonPropertyName("scheduleOffset")]             int  ScheduleOffset);
 
 // ── Webhook ──────────────────────────────────────────────────────────────────
 

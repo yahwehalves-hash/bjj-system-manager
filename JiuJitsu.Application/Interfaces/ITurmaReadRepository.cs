@@ -4,6 +4,6 @@ namespace JiuJitsu.Application.Interfaces;
 
 public interface ITurmaReadRepository
 {
-    Task<ListaTurmasDto> ListarAsync(Guid? filialId, bool? ativo, CancellationToken cancellationToken = default);
+    Task<ListaTurmasDto> ListarAsync(Guid? filialId, bool? ativo, Guid? atletaId = null, CancellationToken cancellationToken = default);
     Task<TurmaDetalheDto?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);
 }
