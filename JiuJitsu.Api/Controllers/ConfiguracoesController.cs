@@ -1,5 +1,7 @@
 using JiuJitsu.Application.Configuracoes.Commands.AtualizarConfiguracaoFilial;
 using JiuJitsu.Application.Configuracoes.Commands.AtualizarConfiguracaoGlobal;
+using JiuJitsu.Application.Interfaces;
+using JiuJitsu.Domain.Enums;
 using JiuJitsu.Application.Configuracoes.Queries.ObterConfiguracaoEfetiva;
 using JiuJitsu.Application.Configuracoes.Queries.ObterConfiguracaoGlobal;
 using JiuJitsu.Application.DTOs;
@@ -19,10 +21,22 @@ public class ConfiguracoesController : ControllerBase
     private readonly IMediator      _mediator;
     private readonly IFilialContexto _filialContexto;
 
-    public ConfiguracoesController(IMediator mediator, IFilialContexto filialContexto)
+    private readonly IConfiguracaoReadRepository _readRepo;
+
+    public ConfiguracoesController(IMediator mediator, IFilialContexto filialContexto, IConfiguracaoReadRepository readRepo)
     {
         _mediator        = mediator;
         _filialContexto  = filialContexto;
+        _readRepo        = readRepo;
+    }
+
+    [HttpGet("gateways-disponiveis")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(IEnumerable<GatewayDisponivelDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListarGatewaysDisponiveis(CancellationToken cancellationToken)
+    {
+        var gateways = await _readRepo.ListarGatewaysDisponiveisAsync(cancellationToken);
+        return Ok(gateways);
     }
 
     [HttpGet("global")]
@@ -49,6 +63,10 @@ public class ConfiguracoesController : ControllerBase
             request.MultaAtrasoPercentual,
             request.JurosDiarioPercentual,
             request.DescontoAntecipacaoPercentual,
+            request.GatewayTipo,
+            request.GerarCobrancaOnlineAutomatico,
+            request.LembreteInadimplenciaAtivo,
+            request.DiasLembreteAposVencimento,
             usuarioId), cancellationToken);
         return NoContent();
     }
@@ -84,12 +102,16 @@ public class ConfiguracoesController : ControllerBase
 }
 
 public record AtualizarConfiguracaoGlobalRequest(
-    decimal ValorMensalidadePadrao,
-    int     DiaVencimento,
-    int     ToleranciaInadimplenciaDias,
-    decimal MultaAtrasoPercentual,
-    decimal JurosDiarioPercentual,
-    decimal DescontoAntecipacaoPercentual);
+    decimal     ValorMensalidadePadrao,
+    int         DiaVencimento,
+    int         ToleranciaInadimplenciaDias,
+    decimal     MultaAtrasoPercentual,
+    decimal     JurosDiarioPercentual,
+    decimal     DescontoAntecipacaoPercentual,
+    GatewayTipo GatewayTipo,
+    bool        GerarCobrancaOnlineAutomatico,
+    bool        LembreteInadimplenciaAtivo,
+    int         DiasLembreteAposVencimento);
 
 public record AtualizarConfiguracaoFilialRequest(
     decimal? ValorMensalidadePadrao,

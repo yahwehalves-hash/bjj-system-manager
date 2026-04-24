@@ -16,14 +16,17 @@ public class AtualizarConfiguracaoGlobalCommandHandler : IRequestHandler<Atualiz
 
         if (configuracao is null)
         {
-            // Primeira vez — cria o registro singleton
             configuracao = new ConfiguracaoGlobal(
                 request.ValorMensalidadePadrao,
                 request.DiaVencimento,
                 request.ToleranciaInadimplenciaDias,
                 request.MultaAtrasoPercentual,
                 request.JurosDiarioPercentual,
-                request.DescontoAntecipacaoPercentual);
+                request.DescontoAntecipacaoPercentual,
+                request.GatewayTipo,
+                request.GerarCobrancaOnlineAutomatico,
+                request.LembreteInadimplenciaAtivo,
+                request.DiasLembreteAposVencimento);
             await _repo.AdicionarGlobalAsync(configuracao, cancellationToken);
         }
         else
@@ -35,6 +38,10 @@ public class AtualizarConfiguracaoGlobalCommandHandler : IRequestHandler<Atualiz
                 request.MultaAtrasoPercentual,
                 request.JurosDiarioPercentual,
                 request.DescontoAntecipacaoPercentual,
+                request.GatewayTipo,
+                request.GerarCobrancaOnlineAutomatico,
+                request.LembreteInadimplenciaAtivo,
+                request.DiasLembreteAposVencimento,
                 request.UsuarioId);
             await _repo.AtualizarGlobalAsync(configuracao, cancellationToken);
         }

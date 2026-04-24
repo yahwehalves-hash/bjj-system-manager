@@ -1,3 +1,5 @@
+using JiuJitsu.Domain.Enums;
+
 namespace JiuJitsu.Domain.Entities;
 
 /// <summary>
@@ -12,36 +14,51 @@ public class ConfiguracaoGlobal
     public int     ToleranciaInadimplenciaDias    { get; private set; }  // dias de carência após vencimento
     public decimal MultaAtrasoPercentual          { get; private set; }  // ex.: 0.0200 = 2%
     public decimal JurosDiarioPercentual          { get; private set; }  // ex.: 0.00033
-    public decimal DescontoAntecipacaoPercentual  { get; private set; }
-    public DateTime AtualizadoEm                 { get; private set; }
-    public Guid?   AtualizadoPorId               { get; private set; }
+    public decimal    DescontoAntecipacaoPercentual  { get; private set; }
+    public GatewayTipo GatewayTipo                  { get; private set; }
+    public bool       GerarCobrancaOnlineAutomatico { get; private set; }
+    public bool       LembreteInadimplenciaAtivo    { get; private set; }
+    public int        DiasLembreteAposVencimento    { get; private set; }
+    public DateTime   AtualizadoEm                 { get; private set; }
+    public Guid?      AtualizadoPorId              { get; private set; }
 
     private ConfiguracaoGlobal() { }
 
     public ConfiguracaoGlobal(
-        decimal valorMensalidadePadrao,
-        int     diaVencimento,
-        int     toleranciaInadimplenciaDias,
-        decimal multaAtrasoPercentual,
-        decimal jurosDiarioPercentual,
-        decimal descontoAntecipacaoPercentual)
+        decimal    valorMensalidadePadrao,
+        int        diaVencimento,
+        int        toleranciaInadimplenciaDias,
+        decimal    multaAtrasoPercentual,
+        decimal    jurosDiarioPercentual,
+        decimal    descontoAntecipacaoPercentual,
+        GatewayTipo gatewayTipo                  = GatewayTipo.Asaas,
+        bool       gerarCobrancaOnlineAutomatico = true,
+        bool       lembreteInadimplenciaAtivo    = true,
+        int        diasLembreteAposVencimento    = 1)
     {
         Id = Guid.CreateVersion7();
         Atualizar(valorMensalidadePadrao, diaVencimento, toleranciaInadimplenciaDias,
-                  multaAtrasoPercentual, jurosDiarioPercentual, descontoAntecipacaoPercentual, null);
+                  multaAtrasoPercentual, jurosDiarioPercentual, descontoAntecipacaoPercentual,
+                  gatewayTipo, gerarCobrancaOnlineAutomatico, lembreteInadimplenciaAtivo,
+                  diasLembreteAposVencimento, null);
     }
 
     public void Atualizar(
-        decimal valorMensalidadePadrao,
-        int     diaVencimento,
-        int     toleranciaInadimplenciaDias,
-        decimal multaAtrasoPercentual,
-        decimal jurosDiarioPercentual,
-        decimal descontoAntecipacaoPercentual,
-        Guid?   atualizadoPorId)
+        decimal    valorMensalidadePadrao,
+        int        diaVencimento,
+        int        toleranciaInadimplenciaDias,
+        decimal    multaAtrasoPercentual,
+        decimal    jurosDiarioPercentual,
+        decimal    descontoAntecipacaoPercentual,
+        GatewayTipo gatewayTipo,
+        bool       gerarCobrancaOnlineAutomatico,
+        bool       lembreteInadimplenciaAtivo,
+        int        diasLembreteAposVencimento,
+        Guid?      atualizadoPorId)
     {
         Validar(valorMensalidadePadrao, diaVencimento, toleranciaInadimplenciaDias,
-                multaAtrasoPercentual, jurosDiarioPercentual, descontoAntecipacaoPercentual);
+                multaAtrasoPercentual, jurosDiarioPercentual, descontoAntecipacaoPercentual,
+                diasLembreteAposVencimento);
 
         ValorMensalidadePadrao        = valorMensalidadePadrao;
         DiaVencimento                 = diaVencimento;
@@ -49,6 +66,10 @@ public class ConfiguracaoGlobal
         MultaAtrasoPercentual         = multaAtrasoPercentual;
         JurosDiarioPercentual         = jurosDiarioPercentual;
         DescontoAntecipacaoPercentual = descontoAntecipacaoPercentual;
+        GatewayTipo                   = gatewayTipo;
+        GerarCobrancaOnlineAutomatico = gerarCobrancaOnlineAutomatico;
+        LembreteInadimplenciaAtivo    = lembreteInadimplenciaAtivo;
+        DiasLembreteAposVencimento    = diasLembreteAposVencimento;
         AtualizadoEm                  = DateTime.UtcNow;
         AtualizadoPorId               = atualizadoPorId;
     }
@@ -59,7 +80,8 @@ public class ConfiguracaoGlobal
         int     toleranciaInadimplenciaDias,
         decimal multaAtrasoPercentual,
         decimal jurosDiarioPercentual,
-        decimal descontoAntecipacaoPercentual)
+        decimal descontoAntecipacaoPercentual,
+        int     diasLembreteAposVencimento)
     {
         if (valorMensalidadePadrao <= 0)
             throw new ArgumentException("Valor da mensalidade deve ser maior que zero.");
@@ -73,5 +95,7 @@ public class ConfiguracaoGlobal
             throw new ArgumentException("Juros diário não pode ser negativo.");
         if (descontoAntecipacaoPercentual < 0)
             throw new ArgumentException("Desconto de antecipação não pode ser negativo.");
+        if (diasLembreteAposVencimento < 0)
+            throw new ArgumentException("Dias de lembrete não pode ser negativo.");
     }
 }

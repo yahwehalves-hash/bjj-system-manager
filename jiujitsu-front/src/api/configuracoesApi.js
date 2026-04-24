@@ -9,8 +9,9 @@ api.interceptors.request.use(config => {
 })
 
 export const configuracoesApi = {
-  obterGlobal:        ()             => api.get('/api/configuracoes/global'),
-  atualizarGlobal:    (dados)        => api.put('/api/configuracoes/global', dados),
-  obterEfetiva:       (filialId)     => api.get(`/api/configuracoes/filial/${filialId}/efetiva`),
-  atualizarFilial:    (filialId, dados) => api.put(`/api/configuracoes/filial/${filialId}`, dados),
+  obterGlobal:              ()                => api.get('/api/configuracoes/global'),
+  atualizarGlobal:          (dados)           => api.put('/api/configuracoes/global', dados),
+  obterEfetiva:             (filialId)        => api.get(`/api/configuracoes/filial/${filialId}/efetiva`),
+  atualizarFilial:          (filialId, dados) => api.put(`/api/configuracoes/filial/${filialId}`, dados),
+  listarGatewaysDisponiveis: ()               => api.get('/api/configuracoes/gateways-disponiveis'),
 }

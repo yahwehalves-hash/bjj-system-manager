@@ -1,5 +1,6 @@
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Application.Pagamento.Commands.CriarCobrancaOnline;
+using JiuJitsu.Domain.Enums;
 using JiuJitsu.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -10,26 +11,47 @@ public class GerarCobrancasOnlineHandler
 {
     private readonly IMensalidadeRepository _mensalidadeRepo;
     private readonly IGatewayPagamento      _gateway;
+    private readonly IConfiguracaoRepository _configuracaoRepo;
     private readonly IMediator              _mediator;
     private readonly ILogger<GerarCobrancasOnlineHandler> _logger;
 
     public GerarCobrancasOnlineHandler(
-        IMensalidadeRepository mensalidadeRepo,
-        IGatewayPagamento      gateway,
-        IMediator              mediator,
+        IMensalidadeRepository  mensalidadeRepo,
+        IGatewayPagamento       gateway,
+        IConfiguracaoRepository configuracaoRepo,
+        IMediator               mediator,
         ILogger<GerarCobrancasOnlineHandler> logger)
     {
-        _mensalidadeRepo = mensalidadeRepo;
-        _gateway         = gateway;
-        _mediator        = mediator;
-        _logger          = logger;
+        _mensalidadeRepo  = mensalidadeRepo;
+        _gateway          = gateway;
+        _configuracaoRepo = configuracaoRepo;
+        _mediator         = mediator;
+        _logger           = logger;
     }
 
     public async Task ProcessarAsync(CancellationToken cancellationToken)
     {
+        var config = await _configuracaoRepo.ObterGlobalAsync(cancellationToken);
+
+        // Respeita configuração do banco; fallback para comportamento original se ainda não configurado
+        var gatewayTipo = config?.GatewayTipo ?? GatewayTipo.Asaas;
+        var gerarAuto   = config?.GerarCobrancaOnlineAutomatico ?? true;
+
+        if (gatewayTipo == GatewayTipo.Nenhum)
+        {
+            _logger.LogDebug("Gateway configurado como 'Nenhum' — job de cobrança online ignorado.");
+            return;
+        }
+
+        if (!gerarAuto)
+        {
+            _logger.LogDebug("Geração automática de cobranças desativada nas configurações — job ignorado.");
+            return;
+        }
+
         if (!_gateway.Configurado)
         {
-            _logger.LogDebug("Gateway de pagamento não configurado — job ignorado.");
+            _logger.LogDebug("Gateway de pagamento não configurado (sem ApiKey) — job ignorado.");
             return;
         }
 

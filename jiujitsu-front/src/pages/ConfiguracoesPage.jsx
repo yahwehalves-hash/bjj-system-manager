@@ -3,19 +3,21 @@ import { configuracoesApi } from '../api/configuracoesApi'
 import { filiaisApi } from '../api/filiaisApi'
 
 export default function ConfiguracoesPage({ usuario }) {
-  const [global, setGlobal]         = useState(null)
-  const [filiais, setFiliais]       = useState([])
-  const [filialSel, setFilialSel]   = useState('')
-  const [efetiva, setEfetiva]       = useState(null)
-  const [formGlobal, setFormGlobal] = useState({})
-  const [formFilial, setFormFilial] = useState({})
-  const [alerta, setAlerta]         = useState({ tipo: '', msg: '' })
+  const [global, setGlobal]               = useState(null)
+  const [filiais, setFiliais]             = useState([])
+  const [filialSel, setFilialSel]         = useState('')
+  const [efetiva, setEfetiva]             = useState(null)
+  const [formGlobal, setFormGlobal]       = useState({})
+  const [formFilial, setFormFilial]       = useState({})
+  const [gateways, setGateways]           = useState([])
+  const [alerta, setAlerta]               = useState({ tipo: '', msg: '' })
   const isAdmin = usuario?.role === 'Admin'
 
   useEffect(() => {
     if (isAdmin) {
       carregarGlobal()
       filiaisApi.listar(true).then(r => setFiliais(r.data))
+      configuracoesApi.listarGatewaysDisponiveis().then(r => setGateways(r.data)).catch(() => {})
     }
   }, [])
 
@@ -54,12 +56,16 @@ export default function ConfiguracoesPage({ usuario }) {
   async function salvarGlobal() {
     try {
       await configuracoesApi.atualizarGlobal({
-        valorMensalidadePadrao:      Number(formGlobal.valorMensalidadePadrao),
-        diaVencimento:               Number(formGlobal.diaVencimento),
-        toleranciaInadimplenciaDias: Number(formGlobal.toleranciaInadimplenciaDias),
-        multaAtrasoPercentual:       Number(formGlobal.multaAtrasoPercentual),
-        jurosDiarioPercentual:       Number(formGlobal.jurosDiarioPercentual),
-        descontoAntecipacaoPercentual: Number(formGlobal.descontoAntecipacaoPercentual),
+        valorMensalidadePadrao:         Number(formGlobal.valorMensalidadePadrao),
+        diaVencimento:                  Number(formGlobal.diaVencimento),
+        toleranciaInadimplenciaDias:    Number(formGlobal.toleranciaInadimplenciaDias),
+        multaAtrasoPercentual:          Number(formGlobal.multaAtrasoPercentual),
+        jurosDiarioPercentual:          Number(formGlobal.jurosDiarioPercentual),
+        descontoAntecipacaoPercentual:  Number(formGlobal.descontoAntecipacaoPercentual),
+        gatewayTipo:                    formGlobal.gatewayTipo || 'Asaas',
+        gerarCobrancaOnlineAutomatico:  formGlobal.gerarCobrancaOnlineAutomatico ?? true,
+        lembreteInadimplenciaAtivo:     formGlobal.lembreteInadimplenciaAtivo ?? true,
+        diasLembreteAposVencimento:     Number(formGlobal.diasLembreteAposVencimento ?? 1),
       })
       mostrarAlerta('success', 'Configuração global atualizada.')
       await carregarGlobal()
@@ -89,6 +95,17 @@ export default function ConfiguracoesPage({ usuario }) {
     </div>
   )
 
+  const toggle = (label, key, form, setForm, hint) => (
+    <div key={key}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+        <input type="checkbox" checked={form[key] ?? true}
+          onChange={e => setForm({ ...form, [key]: e.target.checked })} />
+        {label}
+      </label>
+      {hint && <small style={{ color: '#6b7280' }}>{hint}</small>}
+    </div>
+  )
+
   return (
     <div className="page-container">
       <h2>Configurações</h2>
@@ -107,7 +124,26 @@ export default function ConfiguracoesPage({ usuario }) {
               {campo('Juros Diário (%)',                'jurosDiarioPercentual',          formGlobal, setFormGlobal)}
               {campo('Desconto Antecipação (%)',        'descontoAntecipacaoPercentual',  formGlobal, setFormGlobal)}
             </div>
-            <button className="btn btn-primary" onClick={salvarGlobal}>Salvar Global</button>
+
+            <h4 style={{ marginTop: '1.5rem', marginBottom: '0.75rem' }}>Gateway de Pagamento</h4>
+            <div className="form-grid">
+              <div>
+                <label>Gateway</label>
+                <select className="input" value={formGlobal.gatewayTipo || 'Asaas'}
+                  onChange={e => setFormGlobal({ ...formGlobal, gatewayTipo: e.target.value })}>
+                  {gateways.map(g => (
+                    <option key={g.nome} value={g.nome}>{g.descricao}</option>
+                  ))}
+                </select>
+              </div>
+              {toggle('Gerar cobranças automaticamente', 'gerarCobrancaOnlineAutomatico', formGlobal, setFormGlobal,
+                'Se desativado, cobranças só são geradas manualmente pelo admin.')}
+              {toggle('Enviar lembrete de inadimplência', 'lembreteInadimplenciaAtivo', formGlobal, setFormGlobal,
+                'Notifica o atleta após o vencimento via canal preferido.')}
+              {campo('Dias após vencimento para lembrete', 'diasLembreteAposVencimento', formGlobal, setFormGlobal)}
+            </div>
+
+            <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={salvarGlobal}>Salvar Global</button>
           </div>
 
           <div className="form-card">

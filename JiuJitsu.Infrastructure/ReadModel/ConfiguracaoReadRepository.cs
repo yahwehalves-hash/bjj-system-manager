@@ -27,6 +27,10 @@ public class ConfiguracaoReadRepository : IConfiguracaoReadRepository
                 multa_atraso_percentual         AS MultaAtrasoPercentual,
                 juros_diario_percentual         AS JurosDiarioPercentual,
                 desconto_antecipacao_percentual AS DescontoAntecipacaoPercentual,
+                gateway_tipo                    AS GatewayTipo,
+                gerar_cobranca_online_automatico AS GerarCobrancaOnlineAutomatico,
+                lembrete_inadimplencia_ativo    AS LembreteInadimplenciaAtivo,
+                dias_lembrete_apos_vencimento   AS DiasLembreteAposVencimento,
                 atualizado_em                   AS AtualizadoEm
             FROM configuracao_global
             LIMIT 1
@@ -53,6 +57,18 @@ public class ConfiguracaoReadRepository : IConfiguracaoReadRepository
             """;
         await using var conexao = new NpgsqlConnection(_connectionString);
         return await conexao.QueryFirstOrDefaultAsync<ConfiguracaoFilialDto>(sql, new { FilialId = filialId });
+    }
+
+    public async Task<IEnumerable<GatewayDisponivelDto>> ListarGatewaysDisponiveisAsync(CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT nome AS Nome, descricao AS Descricao
+            FROM gateways_disponiveis
+            WHERE ativo = true
+            ORDER BY nome
+            """;
+        await using var conexao = new NpgsqlConnection(_connectionString);
+        return await conexao.QueryAsync<GatewayDisponivelDto>(sql);
     }
 
     public async Task<ConfiguracaoEfetivaDto> ObterEfetivaAsync(Guid filialId, CancellationToken cancellationToken = default)

@@ -1,4 +1,5 @@
 using JiuJitsu.Domain.Entities;
+using JiuJitsu.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -42,6 +43,28 @@ public class ConfiguracaoGlobalConfiguration : IEntityTypeConfiguration<Configur
             .IsRequired()
             .HasColumnType("decimal(7,6)")
             .HasColumnName("desconto_antecipacao_percentual");
+
+        builder.Property(c => c.GatewayTipo)
+            .HasConversion<string>()
+            .IsRequired()
+            .HasMaxLength(20)
+            .HasDefaultValueSql("'Asaas'")
+            .HasColumnName("gateway_tipo");
+
+        builder.Property(c => c.GerarCobrancaOnlineAutomatico)
+            .IsRequired()
+            .HasDefaultValue(true)
+            .HasColumnName("gerar_cobranca_online_automatico");
+
+        builder.Property(c => c.LembreteInadimplenciaAtivo)
+            .IsRequired()
+            .HasDefaultValue(true)
+            .HasColumnName("lembrete_inadimplencia_ativo");
+
+        builder.Property(c => c.DiasLembreteAposVencimento)
+            .IsRequired()
+            .HasDefaultValue(1)
+            .HasColumnName("dias_lembrete_apos_vencimento");
 
         builder.Property(c => c.AtualizadoEm)
             .IsRequired()

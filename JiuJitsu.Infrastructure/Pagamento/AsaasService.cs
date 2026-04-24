@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using JiuJitsu.Application.Interfaces;
 using JiuJitsu.Domain.Enums;
+using JiuJitsu.Domain.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -9,9 +10,10 @@ namespace JiuJitsu.Infrastructure.Pagamento;
 
 public class AsaasService : IGatewayPagamento
 {
-    private readonly HttpClient              _http;
-    private readonly ILogger<AsaasService>   _logger;
-    private readonly string?                 _apiKey;
+    private readonly HttpClient                  _http;
+    private readonly ILogger<AsaasService>       _logger;
+    private readonly IConfiguracaoRepository     _configuracaoRepo;
+    private readonly string?                     _apiKey;
 
     private static readonly JsonSerializerOptions _jsonOpts = new()
     {
@@ -21,12 +23,14 @@ public class AsaasService : IGatewayPagamento
     public bool Configurado => !string.IsNullOrWhiteSpace(_apiKey);
 
     public AsaasService(
-        IHttpClientFactory    httpFactory,
-        IConfiguration        config,
-        ILogger<AsaasService> logger)
+        IHttpClientFactory       httpFactory,
+        IConfiguration           config,
+        IConfiguracaoRepository  configuracaoRepo,
+        ILogger<AsaasService>    logger)
     {
-        _logger = logger;
-        _apiKey = config["Asaas:ApiKey"];
+        _logger           = logger;
+        _configuracaoRepo = configuracaoRepo;
+        _apiKey           = config["Asaas:ApiKey"];
 
         var baseUrl = config["Asaas:BaseUrl"] ?? "https://sandbox.asaas.com/api/v3";
         if (!baseUrl.EndsWith("/")) baseUrl += "/";
@@ -105,17 +109,28 @@ public class AsaasService : IGatewayPagamento
             var usaEmail    = canalNotificacao is CanalNotificacao.Email    or CanalNotificacao.Ambos;
             var usaWhatsApp = canalNotificacao is CanalNotificacao.WhatsApp or CanalNotificacao.Ambos;
 
+            // Lê configuração do banco — fallback para defaults se ainda não configurado
+            var config             = await _configuracaoRepo.ObterGlobalAsync(ct);
+            var lembreteAtivo      = config?.LembreteInadimplenciaAtivo    ?? true;
+            var diasLembrete       = config?.DiasLembreteAposVencimento    ?? 1;
+
             var eventosPrioritarios = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
             {
                 { "PAYMENT_CREATED", 0 },
-                { "PAYMENT_OVERDUE", 1 },
             };
+
+            if (lembreteAtivo)
+                eventosPrioritarios["PAYMENT_OVERDUE"] = diasLembrete;
 
             foreach (var notif in lista.Data.Where(n => eventosPrioritarios.ContainsKey(n.Event)))
             {
                 var offset = eventosPrioritarios[notif.Event];
+                var enabled = notif.Event.Equals("PAYMENT_OVERDUE", StringComparison.OrdinalIgnoreCase)
+                    ? lembreteAtivo
+                    : true;
+
                 var update = new AsaasNotificacaoUpdateRequest(
-                    Enabled:                    true,
+                    Enabled:                    enabled,
                     EmailEnabledForCustomer:    usaEmail,
                     WhatsappEnabledForCustomer: usaWhatsApp,
                     ScheduleOffset:             offset);
@@ -124,8 +139,8 @@ public class AsaasService : IGatewayPagamento
             }
 
             _logger.LogInformation(
-                "Notificações Asaas configuradas para cliente {ClienteId}: canal={Canal}.",
-                clienteId, canalNotificacao);
+                "Notificações Asaas configuradas para cliente {ClienteId}: canal={Canal}, lembreteAtivo={Ativo}, diasLembrete={Dias}.",
+                clienteId, canalNotificacao, lembreteAtivo, diasLembrete);
         }
         catch (Exception ex)
         {

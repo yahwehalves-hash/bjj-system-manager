@@ -11,4 +11,7 @@ public interface IConfiguracaoReadRepository
     /// Retorna os parâmetros efetivos da filial: valor local se existir, senão valor global (via COALESCE no SQL).
     /// </summary>
     Task<ConfiguracaoEfetivaDto> ObterEfetivaAsync(Guid filialId, CancellationToken cancellationToken = default);
+
+    /// <summary>Retorna os gateways ativos disponíveis para seleção pelo admin.</summary>
+    Task<IEnumerable<GatewayDisponivelDto>> ListarGatewaysDisponiveisAsync(CancellationToken cancellationToken = default);
 }
