@@ -1,3 +1,4 @@
+using Bogus;
 using FluentAssertions;
 using JiuJitsu.Application.Commands.CriarAtleta;
 using JiuJitsu.Application.Interfaces;
@@ -13,6 +14,7 @@ public class CriarAtletaCommandHandlerTests
     private readonly IMessagePublisher _publisher = Substitute.For<IMessagePublisher>();
     private readonly IAtletaRepository _atletaRepository = Substitute.For<IAtletaRepository>();
     private readonly CriarAtletaCommandHandler _handler;
+    private readonly Faker _faker = new("pt_BR");
 
     public CriarAtletaCommandHandlerTests()
     {
@@ -22,19 +24,24 @@ public class CriarAtletaCommandHandlerTests
         _handler = new CriarAtletaCommandHandler(_publisher, _atletaRepository);
     }
 
+    private CriarAtletaCommand GerarCommand()
+    {
+        return new CriarAtletaCommand(
+            FilialId:            Guid.NewGuid(),
+            NomeCompleto:        _faker.Person.FullName,
+            Cpf:                 "12345678901",
+            DataNascimento:      DateOnly.FromDateTime(_faker.Date.Past(20, DateTime.Now.AddYears(-5))),
+            Faixa:               _faker.PickRandom<Faixa>(),
+            Grau:                _faker.PickRandom<Grau>(),
+            DataUltimaGraduacao: DateOnly.FromDateTime(_faker.Date.Past(2)),
+            Email:               _faker.Internet.Email());
+    }
+
     [Fact]
     public async Task Handle_DevePublicarMensagemComOperacaoCriacao()
     {
         // Arrange
-        var command = new CriarAtletaCommand(
-            FilialId:            Guid.NewGuid(),
-            NomeCompleto:        "Carlos Silva",
-            Cpf:                 "12345678901",
-            DataNascimento:      new DateOnly(1990, 5, 15),
-            Faixa:               Faixa.Azul,
-            Grau:                Grau.Segundo,
-            DataUltimaGraduacao: new DateOnly(2023, 1, 10),
-            Email:               "carlos@email.com");
+        var command = GerarCommand();
 
         // Act
         var id = await _handler.Handle(command, CancellationToken.None);
@@ -46,8 +53,8 @@ public class CriarAtletaCommandHandlerTests
             Arg.Is<AtletaMensagem>(m =>
                 m.Operacao == "Criacao" &&
                 m.AtletaId == id &&
-                m.Payload!.NomeCompleto == "Carlos Silva" &&
-                m.Payload.Email == "carlos@email.com"),
+                m.Payload!.NomeCompleto == command.NomeCompleto &&
+                m.Payload.Email == command.Email),
             Arg.Any<CancellationToken>());
     }
 
@@ -55,13 +62,7 @@ public class CriarAtletaCommandHandlerTests
     public async Task Handle_DeveChamarPublisherExatamenteUmaVez()
     {
         // Arrange
-        var command = new CriarAtletaCommand(
-            Guid.NewGuid(),
-            "Ana Lima", "98765432100",
-            new DateOnly(1995, 3, 20),
-            Faixa.Roxa, Grau.Primeiro,
-            new DateOnly(2024, 6, 1),
-            "ana@email.com");
+        var command = GerarCommand();
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
