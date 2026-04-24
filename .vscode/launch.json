@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug — API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-api",
+            "program": "${workspaceFolder}/JiuJitsu.Api/bin/Debug/net9.0/JiuJitsu.Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/JiuJitsu.Api",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug — Worker",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-worker",
+            "program": "${workspaceFolder}/JiuJitsu.Worker/bin/Debug/net9.0/JiuJitsu.Worker.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/JiuJitsu.Worker",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Attach — Processo em execução",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+}

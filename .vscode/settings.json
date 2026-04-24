@@ -1,0 +1,21 @@
+{
+    // Roslyn LSP (C# Dev Kit) — IntelliSense completo, Go to Definition, Find All References
+    // O debugger "coreclr" no launch.json usa vsdbg e funciona normalmente no macOS 12
+    "dotnet.server.useOmnisharp": false,
+
+    // IntelliSense
+    "editor.inlayHints.enabled": "on",
+    "dotnet.inlayHints.enableInlayHintsForParameters": true,
+    "dotnet.inlayHints.enableInlayHintsForLiteralParameters": true,
+    "dotnet.inlayHints.enableInlayHintsForTypes": true,
+
+    // Navegação
+    "editor.gotoLocation.multipleDefinitions": "goto",
+    "editor.gotoLocation.multipleReferences": "peek",
+
+    // Conforto geral
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "editor.suggest.preview": true,
+    "editor.acceptSuggestionOnEnter": "on"
+}
