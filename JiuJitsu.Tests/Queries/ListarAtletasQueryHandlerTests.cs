@@ -31,6 +31,7 @@ public class ListarAtletasQueryHandlerTests
             "12345678901",
             "Azul",
             2,
+            "Aluno",
             true)).ToList();
 
         var resultadoEsperado = new ListaAtletasDto(
